@@ -1,0 +1,27 @@
+﻿// Copyright Benski Game Works 2025, All rights reserved.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Items/BC_Item.h"
+#include "SlashItem.generated.h"
+
+UCLASS()
+class ULTIMATECPP_API ASlashItem : public ABC_Item
+{
+	GENERATED_BODY()
+
+public:
+	ASlashItem();
+
+protected:
+	virtual void BeginPlay() override;
+
+public:
+	virtual void Tick(float DeltaTime) override;
+
+// Slash Interface
+protected:
+	virtual void OnPickupShapeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult) override;
+	virtual void OnPickupShapeEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) override;
+};
