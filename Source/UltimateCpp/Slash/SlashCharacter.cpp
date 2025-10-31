@@ -4,11 +4,13 @@
 #include "SlashCharacter.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "AI/NavigationSystemBase.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Animation/AnimMontage.h"
 #include "GameFramework/PawnMovementComponent.h"
-#include "Items/Weapons/SlashWeapon.h"
+#include "Combat/SlashWeapon.h"
+#include "Interfaces/BC_Interactable.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogSlashCharacter, All, All);
 
@@ -27,239 +29,6 @@ void ASlashCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 }
-
-void ASlashCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
-void ASlashCharacter::Move(const FInputActionValue& Value)
-{
-	FVector2D MovementVector = Value.Get<FVector2D>();
-	DoMove(MovementVector.X, MovementVector.Y);
-}
-
-void ASlashCharacter::Look(const FInputActionValue& Value)
-{
-	FVector2D LookVector = Value.Get<FVector2D>();
-	float Yaw = LookVector.X;
-	float Pitch = LookVector.Y;
-	DoLook(Yaw, Pitch);
-}
-
-void ASlashCharacter::Jump()
-{
-	DoJump();
-}
-
-void ASlashCharacter::StopJumping()
-{
-	DoStopJumping();
-}
-
-void ASlashCharacter::DoMove(const float Right, const float Forward)
-{
-	if (!CanMove())
-		return;
-	
-	if (GetController() != nullptr)
-	{
-		// find out which way is forward
-		const FRotator Rotation = GetController()->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-
-		// get right vector 
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-		// add movement 
-		AddMovementInput(ForwardDirection, Forward);
-		AddMovementInput(RightDirection, Right);
-	}
-}
-
-void ASlashCharacter::DoLook(const float Yaw, const float Pitch)
-{
-	if (GetController() != nullptr)
-	{
-		// add yaw and pitch input to controller
-		AddControllerYawInput(Yaw);
-		AddControllerPitchInput(Pitch);
-	}
-}
-
-void ASlashCharacter::DoJump()
-{
-	if (!CanMove())
-		return;
-	
-	Super::Jump();
-}
-
-void ASlashCharacter::DoStopJumping()
-{
-	Super::StopJumping();
-}
-
-void ASlashCharacter::DoInteract()
-{
-	if (IsOccupied())
-		return;
-	
-	if (AActor* Item = Interactable.Get())
-	{
-		IBC_Interactable::Execute_Interact(Item, this);
-		return;
-	}
-	
-	if (IsEquipped())
-	{
-		// Play Montage
-		PlayMontage_SkeletalMeshHierarchy(EquipWeaponMontage, TEXT("Unequip"));
-		ActionState = EActionState::EAS_Equipping;
-		CharacterState = ECharacterState::ECS_Unequipped;
-		
-		// Bind On Montage Ended Delegate
-		FOnMontageEnded MontageEndedDelegate;
-		MontageEndedDelegate.BindLambda(
-			[&](UAnimMontage* AnimMontage, bool bInterrupted)
-			{
-				ActionState = EActionState::EAS_Unoccupied;
-			});
-		BindOnMontageEndedDelegate_SkeletalMeshHierarchy(EquipWeaponMontage, MontageEndedDelegate);
-	}
-	else if (EquippedWeapon.IsValid())
-	{
-		PlayMontage_SkeletalMeshHierarchy(EquipWeaponMontage, TEXT("Equip"));
-		EquippedWeapon.Get()->AttachToHand(this);
-		
-		ActionState = EActionState::EAS_Equipping;
-		CharacterState = ECharacterState::ECS_Equipped;
-		
-		// Bind On Montage Ended Delegate
-		FOnMontageEnded MontageEndedDelegate;
-		MontageEndedDelegate.BindLambda(
-			[&](UAnimMontage* AnimMontage, bool bInterrupted)
-			{
-				ActionState = EActionState::EAS_Unoccupied;
-			});
-		BindOnMontageEndedDelegate_SkeletalMeshHierarchy(EquipWeaponMontage, MontageEndedDelegate);
-	}
-}
-
-void ASlashCharacter::DoAttackQuick()
-{
-	if (!CanAttack())
-		return;
-
-	AttackQuickCombo();
-}
-
-void ASlashCharacter::AttackQuickCombo()
-{
-	if (AttackQuickMontage)
-	{
-		if (bAttackQuickCombo
-			&& !bAttackBufferFull
-			&& ComboCount < 2)
-		{
-			bAttackBufferFull = true;
-			ComboCount++;
-			return;
-		}
-		
-		// Play Montage
-		FName SectionName = FName(FString::Printf(TEXT("Attack%d"), ComboCount + 1));
-		TArray<USkeletalMeshComponent*> SkeletalMeshes = PlayMontage_SkeletalMeshHierarchy(AttackQuickMontage, SectionName);
-		ActionState = EActionState::EAS_Attacking;
-				
-		// Bind On End Anim Montage Delegate
-		FOnMontageEnded MontageEndedDelegate;
-		MontageEndedDelegate.BindLambda(
-			[&](UAnimMontage* AnimMontage, bool bInterrupted)
-			{
-				bAttackQuickCombo = false;
-				
-				if (bAttackBufferFull)
-				{
-					bAttackBufferFull = false;
-					AttackQuickCombo();
-					return;
-				}
-				
-				bAttackBufferFull = false;
-				ComboCount = 0;
-				ActionState = EActionState::EAS_Unoccupied;
-			});
-		BindOnMontageEndedDelegate_SkeletalMeshHierarchy(AttackQuickMontage, MontageEndedDelegate);
-	}
-}
-
-TArray<USkeletalMeshComponent*> ASlashCharacter::PlayMontage_SkeletalMeshHierarchy(UAnimMontage* Montage, const FName& SectionName)
-{
-	if (!ensureMsgf(Montage != nullptr, TEXT("Invalid montage")))
-		return TArray<USkeletalMeshComponent*>();
-	
-	// Array of relevant skeletal meshes to return
-	TArray<USkeletalMeshComponent*> Result;
-
-	// Temp array
-	TArray<USceneComponent*> MeshComponents;
-	GetMesh()->GetChildrenComponents(false, MeshComponents);
-	MeshComponents.Add(GetMesh());
-
-	for (USceneComponent* MeshComponent : MeshComponents)
-	{
-		if (USkeletalMeshComponent* SkeletalMesh = Cast<USkeletalMeshComponent>(MeshComponent))
-		{
-			if (UAnimInstance* AnimInstance = SkeletalMesh->GetAnimInstance())
-			{
-				Result.Add(SkeletalMesh);
-				AnimInstance->Montage_Play(Montage);
-				if (!SectionName.IsNone())
-					AnimInstance->Montage_JumpToSection(SectionName);
-			}
-		}
-	}
-	return Result;
-}
-
-void ASlashCharacter::BindOnMontageEndedDelegate_SkeletalMeshHierarchy(UAnimMontage* Montage,
-	FOnMontageEnded& Delegate)
-{
-	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
-	{
-		AnimInstance->Montage_SetEndDelegate(Delegate);
-	}
-}
-
-bool ASlashCharacter::CanAttack() const
-{
-	return  IsEquipped()
-			&& (ActionState == EActionState::EAS_Attacking ? bAttackQuickCombo : true)
-			&& !bAttackBufferFull
-			&& ComboCount < 3
-			&& GetMovementComponent()
-			&& !GetMovementComponent()->IsFalling();
-}
-
-void ASlashCharacter::SetInteractable(AActor* Item)
-{
-	// If Item is valid but doesn't implement IBC_Interactable interface >> Do nothing
-	if (Item && !ensureMsgf(Item->Implements<UBC_Interactable>(), TEXT("Attempt to set Item that does not implement IBC_Interactable interface.")))
-		return;
-
-	// Otherwise, set Interactable as Item
-	Interactable = Item;
-}
-
-void ASlashCharacter::SetWeapon(ASlashWeapon* Weapon)
-{
-	EquippedWeapon = Weapon;
-}
-
 void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -299,4 +68,256 @@ void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 		UE_LOG(LogSlashCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component!"), *GetNameSafe(this));
 	}
 }
+void ASlashCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+}
 
+//~ Begin Input
+void ASlashCharacter::Move(const FInputActionValue& Value)
+{
+	FVector2D MovementVector = Value.Get<FVector2D>();
+	DoMove(MovementVector.X, MovementVector.Y);
+}
+void ASlashCharacter::Look(const FInputActionValue& Value)
+{
+	FVector2D LookVector = Value.Get<FVector2D>();
+	float Yaw = LookVector.X;
+	float Pitch = LookVector.Y;
+	DoLook(Yaw, Pitch);
+}
+void ASlashCharacter::Jump()
+{
+	DoJump();
+}
+void ASlashCharacter::StopJumping()
+{
+	DoStopJumping();
+}
+void ASlashCharacter::DoMove(const float Right, const float Forward)
+{
+	if (!CanMove())
+		return;
+	
+	if (GetController() != nullptr)
+	{
+		// find out which way is forward
+		const FRotator Rotation = GetController()->GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+		// get forward vector
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+
+		// get right vector 
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+		// add movement 
+		AddMovementInput(ForwardDirection, Forward);
+		AddMovementInput(RightDirection, Right);
+	}
+}
+void ASlashCharacter::DoLook(const float Yaw, const float Pitch)
+{
+	if (GetController() != nullptr)
+	{
+		// add yaw and pitch input to controller
+		AddControllerYawInput(Yaw);
+		AddControllerPitchInput(Pitch);
+	}
+}
+void ASlashCharacter::DoJump()
+{
+	if (!CanMove())
+		return;
+	
+	Super::Jump();
+}
+void ASlashCharacter::DoStopJumping()
+{
+	Super::StopJumping();
+}
+void ASlashCharacter::DoInteract()
+{
+	if (IsOccupied())
+		return;
+	
+	if (AActor* Item = Interactable.Get())
+	{
+		IBC_Interactable::Execute_Interact(Item, this);
+		return;
+	}
+	
+	if (IsEquipped())
+	{
+		UnequipWeapon();
+	}
+	else if (GetCurrentWeapon())
+	{
+		EquipWeapon();
+	}
+}
+void ASlashCharacter::DoAttackQuick()
+{
+	if (!CanAttack())
+		return;
+
+	AttackQuickCombo();
+}
+//~ End input
+
+//~ Begin Weapon
+void ASlashCharacter::EquipWeapon(ASlashWeapon* NewWeapon)
+{
+	if (NewWeapon && NewWeapon->Implements<UBC_WeaponInterface>())
+		CurrentWeapon = NewWeapon;
+
+	ASlashWeapon* Weapon = GetCurrentWeapon();
+	if (!ensureMsgf(Weapon, TEXT("EquipWeapon called but no valid weapon found.")))
+		return;
+	
+	PlayMontage_SkeletalMeshHierarchy(EquipWeaponMontage, TEXT("Equip"));
+	IBC_WeaponInterface::Execute_Attach(Weapon, GetMesh(), HandSocketName);
+
+	Weapon->OnMeleeWeaponHit.AddDynamic(this, &ThisClass::OnWeaponHit);
+	
+	CharacterState = ECharacterState::ECS_Equipped;
+	ActionState = EActionState::EAS_Equipping;
+		
+	// Bind On Montage Ended Delegate
+	FOnMontageEnded MontageEndedDelegate;
+	MontageEndedDelegate.BindLambda(
+		[&](UAnimMontage* AnimMontage, bool bInterrupted)
+		{
+			ActionState = EActionState::EAS_Unoccupied;
+		});
+	BindOnMontageEndedDelegate(EquipWeaponMontage, MontageEndedDelegate);
+}
+void ASlashCharacter::UnequipWeapon()
+{
+	ASlashWeapon* Weapon = GetCurrentWeapon();
+	
+	if (!ensureMsgf(Weapon, TEXT("UnequipWeapon called but no valid weapon found.")))
+		return;
+
+	Weapon->OnMeleeWeaponHit.RemoveDynamic(this, &ThisClass::ASlashCharacter::OnWeaponHit);
+	
+	// Play Montage
+	PlayMontage_SkeletalMeshHierarchy(EquipWeaponMontage, TEXT("Unequip"));
+	ActionState = EActionState::EAS_Equipping;
+	CharacterState = ECharacterState::ECS_Unequipped;
+		
+	// Bind On Montage Ended Delegate
+	FOnMontageEnded MontageEndedDelegate;
+	MontageEndedDelegate.BindLambda(
+		[&](UAnimMontage* AnimMontage, bool bInterrupted)
+		{
+			ActionState = EActionState::EAS_Unoccupied;
+		});
+	BindOnMontageEndedDelegate(EquipWeaponMontage, MontageEndedDelegate);
+}
+
+void ASlashCharacter::OnWeaponHit(const FHitResult& Hit)
+{
+	UE_LOG(LogSlashCharacter, Warning, TEXT("Hit: %s"), *Hit.GetActor()->GetName());
+}
+
+void ASlashCharacter::AttackQuickCombo()
+{
+	if (AttackQuickMontage)
+	{
+		if (bAttackQuickCombo
+			&& !bAttackBufferFull
+			&& ComboCount < 2)
+		{
+			bAttackBufferFull = true;
+			ComboCount++;
+			return;
+		}
+		
+		// Play Montage
+		FName SectionName = FName(FString::Printf(TEXT("Attack%d"), ComboCount + 1));
+		TArray<USkeletalMeshComponent*> SkeletalMeshes = PlayMontage_SkeletalMeshHierarchy(AttackQuickMontage, SectionName);
+		ActionState = EActionState::EAS_Attacking;
+				
+		// Bind On End Anim Montage Delegate
+		FOnMontageEnded MontageEndedDelegate;
+		MontageEndedDelegate.BindLambda(
+			[&](UAnimMontage* AnimMontage, bool bInterrupted)
+			{
+				bAttackQuickCombo = false;
+				
+				if (bAttackBufferFull)
+				{
+					bAttackBufferFull = false;
+					AttackQuickCombo();
+					return;
+				}
+				
+				bAttackBufferFull = false;
+				ComboCount = 0;
+				ActionState = EActionState::EAS_Unoccupied;
+			});
+		BindOnMontageEndedDelegate(AttackQuickMontage, MontageEndedDelegate);
+	}
+}
+
+TArray<USkeletalMeshComponent*> ASlashCharacter::PlayMontage_SkeletalMeshHierarchy(UAnimMontage* Montage, const FName& SectionName)
+{
+	if (!ensureMsgf(Montage != nullptr, TEXT("Invalid montage")))
+		return TArray<USkeletalMeshComponent*>();
+	
+	// Array of relevant skeletal meshes to return
+	TArray<USkeletalMeshComponent*> Result;
+
+	// Temp array
+	TArray<USceneComponent*> MeshComponents;
+	GetMesh()->GetChildrenComponents(false, MeshComponents);
+	MeshComponents.Add(GetMesh());
+
+	for (USceneComponent* MeshComponent : MeshComponents)
+	{
+		if (USkeletalMeshComponent* SkeletalMesh = Cast<USkeletalMeshComponent>(MeshComponent))
+		{
+			if (UAnimInstance* AnimInstance = SkeletalMesh->GetAnimInstance())
+			{
+				Result.Add(SkeletalMesh);
+				AnimInstance->Montage_Play(Montage);
+				if (!SectionName.IsNone())
+					AnimInstance->Montage_JumpToSection(SectionName);
+			}
+		}
+	}
+	return Result;
+}
+void ASlashCharacter::BindOnMontageEndedDelegate(UAnimMontage* Montage,
+	FOnMontageEnded& Delegate)
+{
+	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+	{
+		AnimInstance->Montage_SetEndDelegate(Delegate);
+	}
+}
+//~ End Weapon
+
+//~ Begin Interaction
+void ASlashCharacter::SetInteractable(AActor* Item)
+{
+	// If Item is valid but doesn't implement IBC_Interactable interface >> Do nothing
+	if (Item && !ensureMsgf(Item->Implements<UBC_Interactable>(), TEXT("Attempt to set Item that does not implement IBC_Interactable interface.")))
+		return;
+
+	// Otherwise, set Interactable as Item
+	Interactable = Item;
+}
+//~ End Interaction
+
+bool ASlashCharacter::CanAttack() const
+{
+	return  IsEquipped()
+			&& ActionState != EActionState::EAS_Equipping
+			&& (ActionState == EActionState::EAS_Attacking ? bAttackQuickCombo : true)
+			&& !bAttackBufferFull
+			&& ComboCount < 3
+			&& GetMovementComponent()
+			&& !GetMovementComponent()->IsFalling();
+}

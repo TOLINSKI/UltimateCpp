@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Combat/SlashWeapon.h"
 #include "GameFramework/Character.h"
 #include "Utility/SlashTypes.h"
 #include "SlashCharacter.generated.h"
@@ -115,16 +116,35 @@ protected:
 	TArray<USkeletalMeshComponent*> PlayMontage_SkeletalMeshHierarchy(UAnimMontage* Montage, const FName& SectionName);
 
 	/** Begins playing montage and returns all relevant skeletal meshes. */
-	void BindOnMontageEndedDelegate_SkeletalMeshHierarchy(UAnimMontage* Montage, FOnMontageEnded& Delegate);
+	void BindOnMontageEndedDelegate(UAnimMontage* Montage, FOnMontageEnded& Delegate);
 	//~ End Animation
 
 	//~ Begin Weapons
-	UPROPERTY(BlueprintReadOnly)
-	TWeakObjectPtr<ASlashWeapon> EquippedWeapon;
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Slash|Weapon")
+	FName HandSocketName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Slash|Weapon")
+	FName BackSocketName;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Slash|Weapon")
+	TWeakObjectPtr<ASlashWeapon> CurrentWeapon;
+
+	UFUNCTION()
+	void OnWeaponHit(const FHitResult& Hit);
 	//~ End Weapons
 	
 public:
+	//~ Begin Weapon
+	UFUNCTION(BlueprintCallable, Category = "Slash|Weapon")
+	void EquipWeapon(ASlashWeapon* Weapon = nullptr);
+	
+	UFUNCTION(BlueprintCallable, Category = "Slash|Weapon")
+	void UnequipWeapon();
+
+	UFUNCTION(BlueprintPure, Category = "Slash|Weapon")
+	FName GetBackSocketName() const { return BackSocketName; }
+	//~ End Weapon
+	
 	UFUNCTION(BlueprintPure, Category = "Slash|Action State")
 	bool CanAttack() const;
 
@@ -143,11 +163,8 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Slash|Interaction")
 	FORCEINLINE AActor* GetInteractable() const { return Interactable.Get(); }
 
-	UFUNCTION(BlueprintCallable, Category = "Slash|Weapon")
-	void SetWeapon(ASlashWeapon* Weapon);
-
 	UFUNCTION(BlueprintPure, Category = "Slash|Weapon")
-	FORCEINLINE ASlashWeapon* GetWeapon() const { return EquippedWeapon.Get(); }
+	FORCEINLINE ASlashWeapon* GetCurrentWeapon() const { return Cast<ASlashWeapon>(CurrentWeapon.Get()); }
 	
 	UFUNCTION(BlueprintCallable, Category = "Slash|Character State")
 	FORCEINLINE void SetCharacterState(ECharacterState NewCharacterState) { CharacterState = NewCharacterState; }

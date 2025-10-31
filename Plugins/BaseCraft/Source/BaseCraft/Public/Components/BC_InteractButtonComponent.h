@@ -24,9 +24,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Interaction")
 	bool bStartWithWidgetCollapsed;
 
-	/** When true, will follow owners location. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item")
-	bool bAttachToOwnerLocation;
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Interaction")
 	void ShowButton();

@@ -8,24 +8,19 @@ DEFINE_LOG_CATEGORY_STATIC(BC_LogInteractionButton, All, All);
 UBC_InteractButtonComponent::UBC_InteractButtonComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-	SetUsingAbsoluteLocation(true);
+	SetWidgetSpace(EWidgetSpace::Screen);
+	SetDrawAtDesiredSize(true);
 	
 	// Interaction Button Interface:
 	bStartWithWidgetCollapsed = true;
-	bAttachToOwnerLocation = false;
 }
 
 void UBC_InteractButtonComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SetWorldLocation(GetOwner()->GetActorLocation());
-	SetUsingAbsoluteLocation(!bAttachToOwnerLocation);
-
 	if (bStartWithWidgetCollapsed && GetWidget())
-	{
 		GetWidget()->SetVisibility((ESlateVisibility::Collapsed));
-	}
 }
 
 void UBC_InteractButtonComponent::ShowButton_Implementation()

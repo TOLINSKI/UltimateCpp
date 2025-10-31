@@ -22,10 +22,10 @@ void ASlashItem::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void ASlashItem::OnPickupShapeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+void ASlashItem::OnPickupSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	Super::OnPickupShapeBeginOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
+	Super::OnPickupSphereBeginOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
 	
 	if (ASlashCharacter* Character = Cast<ASlashCharacter>(OtherActor))
 	{
@@ -34,10 +34,10 @@ void ASlashItem::OnPickupShapeBeginOverlap(UPrimitiveComponent* OverlappedCompon
 	}
 }
 
-void ASlashItem::OnPickupShapeEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+void ASlashItem::OnPickupSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	Super::OnPickupShapeEndOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex);
+	Super::OnPickupSphereEndOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex);
 	
 	if (ASlashCharacter* Character = Cast<ASlashCharacter>(OtherActor))
 	{

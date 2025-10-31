@@ -4,16 +4,16 @@
 #include "AnimNotify_WeaponSheathed.h"
 
 #include "SlashCharacter.h"
-#include "Items/Weapons/SlashWeapon.h"
+#include "Combat/SlashWeapon.h"
 
 void UAnimNotify_WeaponSheathed::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
                                         const FAnimNotifyEventReference& EventReference)
 {
 	if (ASlashCharacter* Character = Cast<ASlashCharacter>(MeshComp->GetOwner()))
 	{
-		if (ASlashWeapon* Weapon = Character->GetWeapon())
+		if (ASlashWeapon* Weapon = Character->GetCurrentWeapon())
 		{
-			Weapon->AttachToBack(Character);
+			IBC_WeaponInterface::Execute_Attach(Weapon, Character->GetMesh(), Character->GetBackSocketName());
 		}
 	}
 }

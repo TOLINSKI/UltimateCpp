@@ -40,30 +40,34 @@ void ABC_Item::BeginPlay()
 {
 	Super::BeginPlay();
 
-	PickupSphere->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::ABC_Item::OnPickupShapeBeginOverlap);
-	PickupSphere->OnComponentEndOverlap.AddDynamic(this, &ThisClass::OnPickupShapeEndOverlap);
+	PickupSphere->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::ABC_Item::OnPickupSphereBeginOverlap);
+	PickupSphere->OnComponentEndOverlap.AddDynamic(this, &ThisClass::OnPickupSphereEndOverlap);
 
 #if WITH_EDITOR	
 	PickupSphere->SetHiddenInGame(!bShowPickupSphereInEditor);
 #endif
 }
 
-void ABC_Item::OnPickupShapeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+void ABC_Item::OnPickupSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+#if WITH_EDITOR
 	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("%s Began Overlap with: %s"), *GetName(), *OtherActor->GetName()));
 	UE_LOG(LogSlashItem, Display, TEXT("%s Began Overlap with: %s"), *GetName(), *OtherActor->GetName());
-
+#endif
+	
 	if (bCanInteract)
 		BC_ButtonWidget->ShowButton();
 }
 
-void ABC_Item::OnPickupShapeEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+void ABC_Item::OnPickupSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+#if WITH_EDITOR
 	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, FString::Printf(TEXT("%s Ended Overlap with: %s"), *GetName(), *OtherActor->GetName()));
 	UE_LOG(LogSlashItem, Display, TEXT("%s Ended Overlap with: %s"), *GetName(), *OtherActor->GetName());
-
+#endif
+	
 	BC_ButtonWidget->HideButton();
 }
 

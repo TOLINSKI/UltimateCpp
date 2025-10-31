@@ -54,14 +54,11 @@ protected:
 	bool bCanInteract;
 	
 	UFUNCTION()
-	virtual void OnPickupShapeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
+	virtual void OnPickupSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
 
 	UFUNCTION()
-	virtual void OnPickupShapeEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	virtual void OnPickupSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	
 public:
-	// UFUNCTION(BlueprintCallable, Category = "BaseCraft|Interaction")
-	// virtual void Interact(AActor* InstigatorActor);
-
 	virtual void Interact_Implementation(AActor* InstigatorActor) override;
 };
