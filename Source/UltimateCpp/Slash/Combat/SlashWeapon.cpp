@@ -9,8 +9,6 @@
 ASlashWeapon::ASlashWeapon()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
-	AttackTraceChannel = ECC_WorldDynamic;
 }
 
 void ASlashWeapon::BeginPlay()

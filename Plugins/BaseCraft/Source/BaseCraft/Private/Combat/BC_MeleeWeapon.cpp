@@ -5,6 +5,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Pawn.h"
 #include "DrawDebugHelpers.h"
+#include "KismetTraceUtils.h"
 
 ABC_MeleeWeapon::ABC_MeleeWeapon()
 {
@@ -126,7 +127,7 @@ bool ABC_MeleeWeapon::DoAttackTrace_Implementation(FHitResult& HitResult)
 	
 	FCollisionQueryParams CollisionParams;
 	CollisionParams.AddIgnoredActors(ActorsToIgnore);
-
+	
 	bool bIsHit = GetWorld()->SweepMultiByChannel(
 		Hits,
 		TraceStart->GetComponentLocation(),
@@ -136,12 +137,29 @@ bool ABC_MeleeWeapon::DoAttackTrace_Implementation(FHitResult& HitResult)
 		Sphere,
 		CollisionParams,
 		FCollisionResponseParams::DefaultResponseParam);
-
-#if WITH_EDITOR
-	if (bDrawDebugAttackTrace)
-		DrawDebugAttackCapsule(bIsHit ? FColor::Green : FColor::Red);
-#endif		
 	
+#if WITH_EDITOR
+
+	float RealDrawDebugTime = bIsHit ? 5.0f : DrawDebugTime;
+	
+	if (bDrawDebugAttackTrace)
+		DrawDebugSphereTraceMulti(
+		GetWorld(),
+		TraceStart->GetComponentLocation(),
+		TraceEnd->GetComponentLocation(),
+		AttackTraceRadius,
+		EDrawDebugTrace::ForDuration,
+		bIsHit,
+		Hits,
+		FLinearColor::Red,
+		FLinearColor::Green,
+		RealDrawDebugTime);
+	
+	// DrawDebugAttackCapsule(bIsHit ? FColor::Green : FColor::Red);
+#endif		
+
+
+		
 	return bIsHit;
 }
 
