@@ -9,14 +9,13 @@
 ASlashWeapon::ASlashWeapon()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	Mesh->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
+
+	AttackTraceChannel = ECC_WorldDynamic;
 }
 
 void ASlashWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-
-	
 }
 
 void ASlashWeapon::Tick(float DeltaTime)

@@ -131,6 +131,9 @@ protected:
 
 	UFUNCTION()
 	void OnWeaponHit(const FHitResult& Hit);
+
+	UFUNCTION(BlueprintImplementableEvent, Category="Slash|Weapon")
+	void OnWeaponHit_BP(const FHitResult& Hit);
 	//~ End Weapons
 	
 public:

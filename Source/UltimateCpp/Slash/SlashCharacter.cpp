@@ -219,6 +219,7 @@ void ASlashCharacter::UnequipWeapon()
 void ASlashCharacter::OnWeaponHit(const FHitResult& Hit)
 {
 	UE_LOG(LogSlashCharacter, Warning, TEXT("Hit: %s"), *Hit.GetActor()->GetName());
+	OnWeaponHit_BP(Hit);
 }
 
 void ASlashCharacter::AttackQuickCombo()

@@ -23,6 +23,25 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+#if WITH_EDITORONLY_DATA
+	virtual void OnConstruction(const FTransform& Transform) override;
+#endif
+	
+private:
+	
+	TArray<FHitResult> Hits;
+
+	bool bAttackEnabled;
+
+	void DrawDebugAttackCapsule(const FColor& Color);
+
+	/** Returns the radius step from trace-start to trace-end. */
+	FVector GetTraceRadiusStep();
+
+	// Debug:
+	float GetTraceCapsuleHalfHeight();
+	FQuat GetTraceCapsuleRotation();
+	
 protected:
 	virtual void BeginPlay() override;
 	
@@ -41,28 +60,33 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Components")
 	TObjectPtr<USceneComponent> TraceEnd;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Components")
-	TObjectPtr<UCapsuleComponent> AttackCapsule; 
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Components")
-	bool bCapsuleVisibleInEditor;
-
+#if WITH_EDITORONLY_DATA
+	// This capsule component is created only in editor and will not be present in a packaged game
+	UPROPERTY()
+	TObjectPtr<UCapsuleComponent> AttackCapsulePreview; 
+#endif
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="BaseCraft")
 	TWeakObjectPtr<APawn> OwnerPawn;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Weapon")
-	bool bAttackcCapsuleIngoreOwner;
+	float AttackTraceRadius;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Weapon")
 	TEnumAsByte<ECollisionChannel> AttackTraceChannel;
 	
-	UFUNCTION()
-	virtual void OnAttackCapsuleBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Weapon")
+	bool bAttackTraceIgnoreOwner;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Weapon|Debug")
+	bool bDrawDebugAttackTrace;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Weapon|Debug", meta=(EditCondition="bDrawDebugAttackTrace", Units="s"))
+	float DrawDebugTime;
 	
 public:
 	UPROPERTY(BlueprintAssignable, Category="BaseCraft|Weapon|Events")
 	FBC_OnMeleeWeaponTraceHit OnMeleeWeaponHit;
-	
 	
 	void SetOwnerPawn(APawn* Pawn) { OwnerPawn = Pawn; }
 
