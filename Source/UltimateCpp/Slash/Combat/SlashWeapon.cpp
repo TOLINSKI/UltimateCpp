@@ -3,8 +3,6 @@
 
 #include "SlashWeapon.h"
 
-#include "Components/CapsuleComponent.h"
-
 
 ASlashWeapon::ASlashWeapon()
 {

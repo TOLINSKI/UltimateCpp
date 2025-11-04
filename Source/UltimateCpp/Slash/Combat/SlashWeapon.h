@@ -3,14 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Combat/BC_MeleeWeapon.h"
+#include "Combat/Melee/BC_CapsuleWeapon.h"
 #include "SlashWeapon.generated.h"
 
 UCLASS()
-class ULTIMATECPP_API ASlashWeapon : public ABC_MeleeWeapon
+class ULTIMATECPP_API ASlashWeapon : public ABC_CapsuleWeapon
 {
 	GENERATED_BODY()
-
 public:
 	ASlashWeapon();
 

@@ -24,13 +24,13 @@ class BASECRAFT_API IBC_WeaponInterface
 public:
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="BaseCraft|Weapon")
-	bool DoAttackTrace(FHitResult& HitResult);
+	bool DoAttackTrace(FHitResult& HitResult, const TArray<AActor*>& ActorsToIgnore);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="BaseCraft|Weapon")
-	void EnableAttackCollision();
+	void BeginAttackTracing();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="BaseCraft|Weapon")
-	void DisableAttackCollision();
+	void EndAttackTracing();
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="BaseCraft|Weapon")
 	void Attach(USceneComponent* Parent, FName SocketName);

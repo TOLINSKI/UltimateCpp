@@ -6,6 +6,8 @@
 #include "Components/BC_InteractButtonComponent.h"
 #include "kismet/GameplayStatics.h"
 #include "Combat/SlashWeapon.h"
+#include "Combat/Melee/BC_CapsuleWeapon.h"
+
 
 ASlashItem_Weapon::ASlashItem_Weapon()
 {
@@ -14,8 +16,9 @@ ASlashItem_Weapon::ASlashItem_Weapon()
 
 void ASlashItem_Weapon::Equip(ASlashCharacter* Character)
 {
-	ASlashWeapon* NewWeapon = GetWorld()->SpawnActor<ASlashWeapon>(WeaponClass);
-	NewWeapon->SetOwnerPawn(Character);
+	ASlashWeapon* NewWeapon = Cast<ASlashWeapon>(ABC_MeleeWeapon::CreateWeapon(Character, WeaponClass));
+	check(NewWeapon != nullptr);
+	
 	Character->EquipWeapon(NewWeapon);
 	if (EquipSound)
 	{

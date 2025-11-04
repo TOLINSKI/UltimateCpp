@@ -4,7 +4,6 @@
 #include "SlashCharacter.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "AI/NavigationSystemBase.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Animation/AnimMontage.h"
@@ -29,6 +28,12 @@ void ASlashCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 }
+
+UObject* ASlashCharacter::GetWeapon_Implementation()
+{
+	return GetCurrentWeapon();
+}
+
 void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);

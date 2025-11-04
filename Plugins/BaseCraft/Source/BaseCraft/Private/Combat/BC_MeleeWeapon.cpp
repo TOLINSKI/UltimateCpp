@@ -2,10 +2,10 @@
 
 
 #include "Combat/BC_MeleeWeapon.h"
-#include "Components/CapsuleComponent.h"
 #include "GameFramework/Pawn.h"
 #include "DrawDebugHelpers.h"
-#include "KismetTraceUtils.h"
+#include "Interfaces/BC_DamageableInterface.h"
+
 
 ABC_MeleeWeapon::ABC_MeleeWeapon()
 {
@@ -19,80 +19,13 @@ ABC_MeleeWeapon::ABC_MeleeWeapon()
 	Mesh->SetupAttachment(Root);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	
-#if WITH_EDITORONLY_DATA
-	AttackCapsulePreview = CreateDefaultSubobject<UCapsuleComponent>(TEXT("EDITOR ONLY"));
-	AttackCapsulePreview->SetupAttachment(Root);
-	AttackCapsulePreview->SetRelativeScale3D(FVector::OneVector);
-	AttackCapsulePreview->SetCollisionResponseToAllChannels(ECR_Ignore);
-	AttackCapsulePreview->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
-	AttackCapsulePreview->ShapeColor = FColor::Red;
-#endif
-	
-	TraceStart = CreateDefaultSubobject<USceneComponent>(TEXT("TraceStart"));
-	TraceStart->SetupAttachment(Root);
-
-	TraceEnd = CreateDefaultSubobject<USceneComponent>(TEXT("TraceEnd"));
-	TraceEnd->SetupAttachment(Root);
-
-	AttackTraceRadius = 16.0f;
 	AttackTraceChannel = ECC_Visibility;
 	bAttackTraceIgnoreOwner = true;
+	bHitOncePerSwing = true;
 	bDrawDebugAttackTrace = false;
-	DrawDebugTime = 0.2f;
-}
-
-#if WITH_EDITORONLY_DATA
-void ABC_MeleeWeapon::OnConstruction(const FTransform& Transform)
-{
-	Super::OnConstruction(Transform);
-	
-	if (AttackCapsulePreview && TraceStart && TraceEnd)
-	{
-		AttackCapsulePreview->SetCapsuleHalfHeight(GetTraceCapsuleHalfHeight());
-		AttackCapsulePreview->SetRelativeLocation((TraceEnd->GetRelativeLocation() + TraceStart->GetRelativeLocation()) / 2.0f);
-		AttackCapsulePreview->SetCapsuleRadius(AttackTraceRadius);
-		AttackCapsulePreview->SetRelativeRotation(GetTraceCapsuleRotation());
-	}
-}
-#endif
-
-void ABC_MeleeWeapon::DrawDebugAttackCapsule(const FColor& Color)
-{
-	DrawDebugCapsule(
-		GetWorld(),
-		(TraceEnd->GetComponentLocation() + TraceStart->GetComponentLocation()) * 0.5f,
-		GetTraceCapsuleHalfHeight(),
-		AttackTraceRadius,
-		TraceStart->GetComponentQuat(),
-		Color,
-		false,
-		DrawDebugTime);
-}
-
-FVector ABC_MeleeWeapon::GetTraceRadiusStep()
-{
-	if (TraceStart && TraceEnd)
-	{
-		FVector Direction = (TraceEnd->GetComponentLocation() - TraceStart->GetComponentLocation()).GetSafeNormal();
-		return Direction * AttackTraceRadius;
-	}
-	return FVector::OneVector;
-}
-
-float ABC_MeleeWeapon::GetTraceCapsuleHalfHeight()
-{
-	if (TraceStart && TraceEnd)
-		return FVector::Dist(TraceEnd->GetComponentLocation() + GetTraceRadiusStep(), TraceStart->GetComponentLocation() - GetTraceRadiusStep())/ 2.0f;
-
-	return 22.0f;
-}
-
-FQuat ABC_MeleeWeapon::GetTraceCapsuleRotation()
-{
-	if (TraceStart && TraceEnd)
-		return FQuat::FindBetweenVectors(TraceStart->GetComponentLocation(), TraceEnd->GetComponentLocation());
-
-	return FQuat::Identity;
+	DrawDebugTime = 0.1f;
+	bDebugHitsSeparate = true;
+	DrawDebugHitsTime = 5.0f;
 }
 
 void ABC_MeleeWeapon::BeginPlay()
@@ -100,81 +33,91 @@ void ABC_MeleeWeapon::BeginPlay()
 	Super::BeginPlay();
 }
 
+void ABC_MeleeWeapon::MakeActorsToIgnore(TArray<AActor*>& OutActorsToIgnore)
+{
+	OutActorsToIgnore.Add(this);
+	
+	if (APawn* Pawn = OwnerPawn.Get())
+		OutActorsToIgnore.Add(Pawn);
+	
+	if (bHitOncePerSwing)
+	{
+		for (TWeakObjectPtr<AActor> WeakActorPtr : CurrentHitActors)
+		{
+			if (AActor* Actor = WeakActorPtr.Get())
+			{
+				OutActorsToIgnore.Add(Actor);
+			}
+		}
+	}
+}
+
+void ABC_MeleeWeapon::TickAttackLogic()
+{
+	TArray<AActor*> ActorsToIgnore; 
+	MakeActorsToIgnore(ActorsToIgnore);
+
+	// Do Attack Trace:
+	if (FHitResult Hit; DoAttackTrace_Implementation(Hit, ActorsToIgnore))
+	{
+		AActor* HitActor = Hit.GetActor();
+
+		// Block hitting the same actor if needed:
+		if (bHitOncePerSwing)
+		{
+			if (CurrentHitActors.Contains(HitActor))
+				return;
+			
+			CurrentHitActors.Add(HitActor);
+		}
+
+		// Apply Damage to hit actor
+		if (HitActor->Implements<UBC_DamageableInterface>())
+		{
+			FVector ImpactPoint = Hit.ImpactPoint;
+			IBC_DamageableInterface::Execute_TakeDamage(HitActor, ImpactPoint);
+		}
+
+		// Broadcast Delegate
+		OnMeleeWeaponHit.Broadcast(Hit);
+	}
+}
+
+ABC_MeleeWeapon* ABC_MeleeWeapon::CreateWeapon(APawn* OwnerPawn, TSubclassOf<ABC_MeleeWeapon> WeaponClass)
+{
+	if (!ensureMsgf(OwnerPawn != nullptr, TEXT("Owner pawn is null.")))
+		return nullptr;
+
+	ABC_MeleeWeapon* NewWeapon = OwnerPawn->GetWorld()->SpawnActor<ABC_MeleeWeapon>(WeaponClass);
+	check(NewWeapon != nullptr);
+
+	NewWeapon->SetOwnerPawn(OwnerPawn);
+
+	return NewWeapon;
+}
+
 void ABC_MeleeWeapon::Attach_Implementation(USceneComponent* Parent, FName SocketName)
 {
 	AttachToComponent(Parent, FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
 }
 
-void ABC_MeleeWeapon::EnableAttackCollision_Implementation()
+void ABC_MeleeWeapon::BeginAttackTracing_Implementation()
 {
+	CurrentHitActors.Empty();
 	SetActorTickEnabled(true);
-	bAttackEnabled = true;
 }
 
-void ABC_MeleeWeapon::DisableAttackCollision_Implementation()
+void ABC_MeleeWeapon::EndAttackTracing_Implementation()
 {
 	SetActorTickEnabled(false);
-	bAttackEnabled = false;
-}
-
-bool ABC_MeleeWeapon::DoAttackTrace_Implementation(FHitResult& HitResult)
-{
-	FCollisionShape Sphere { FCollisionShape::MakeSphere(AttackTraceRadius) };
-	
-	TArray<AActor*> ActorsToIgnore {this};
-	if (APawn* Pawn = OwnerPawn.Get())
-		ActorsToIgnore.Add(Pawn);
-	
-	FCollisionQueryParams CollisionParams;
-	CollisionParams.AddIgnoredActors(ActorsToIgnore);
-	
-	bool bIsHit = GetWorld()->SweepMultiByChannel(
-		Hits,
-		TraceStart->GetComponentLocation(),
-		TraceEnd->GetComponentLocation(),
-		FQuat::Identity,
-		AttackTraceChannel,
-		Sphere,
-		CollisionParams,
-		FCollisionResponseParams::DefaultResponseParam);
-	
-#if WITH_EDITOR
-
-	float RealDrawDebugTime = bIsHit ? 5.0f : DrawDebugTime;
-	
-	if (bDrawDebugAttackTrace)
-		DrawDebugSphereTraceMulti(
-		GetWorld(),
-		TraceStart->GetComponentLocation(),
-		TraceEnd->GetComponentLocation(),
-		AttackTraceRadius,
-		EDrawDebugTrace::ForDuration,
-		bIsHit,
-		Hits,
-		FLinearColor::Red,
-		FLinearColor::Green,
-		RealDrawDebugTime);
-	
-	// DrawDebugAttackCapsule(bIsHit ? FColor::Green : FColor::Red);
-#endif		
-
-
-		
-	return bIsHit;
+	CurrentHitActors.Empty();
 }
 
 void ABC_MeleeWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	FHitResult FakeHit;
-
-	if (bAttackEnabled && DoAttackTrace_Implementation(FakeHit))
-	{
-		SetActorTickEnabled(false);
-		bAttackEnabled = false;
-		OnMeleeWeaponHit.Broadcast(Hits[0]);
-	}
+	TickAttackLogic();
 }
 
 

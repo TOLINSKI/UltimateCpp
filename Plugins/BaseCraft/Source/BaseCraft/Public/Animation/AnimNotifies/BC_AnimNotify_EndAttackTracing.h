@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotify.h"
-#include "AnimNotify_EnableAttackCollision.generated.h"
+#include "BC_AnimNotify_EndAttackTracing.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ULTIMATECPP_API UAnimNotify_EnableAttackCollision : public UAnimNotify
+class BASECRAFT_API UBC_AnimNotify_EndAttackTracing : public UAnimNotify
 {
 	GENERATED_BODY()
 

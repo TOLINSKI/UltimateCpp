@@ -6,6 +6,8 @@
 #include "Combat/SlashWeapon.h"
 #include "GameFramework/Character.h"
 #include "Utility/SlashTypes.h"
+#include "Interfaces/BC_AttackerInterface.h"
+#include "interfaces/BC_DamageableInterface.h"
 #include "SlashCharacter.generated.h"
 
 class UInputMappingContext;
@@ -18,7 +20,7 @@ class UAnimMontage;
 class ASlashWeapon;
 
 UCLASS()
-class ULTIMATECPP_API ASlashCharacter : public ACharacter
+class ULTIMATECPP_API ASlashCharacter : public ACharacter, public IBC_AttackerInterface, public IBC_DamageableInterface
 {
 	GENERATED_BODY()
 
@@ -33,6 +35,9 @@ protected:
 	virtual void BeginPlay() override;
 
 // Slash interface:
+public:
+	virtual UObject* GetWeapon_Implementation() override;
+		
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Slash|Camera", meta = (AllowPrivateAccess="true"))
 	TObjectPtr<USpringArmComponent> CameraBoom;

@@ -1,0 +1,7 @@
+﻿// Copyright Benski Game Works 2025, All rights reserved.
+
+
+#include "Interfaces/BC_DamageableInterface.h"
+
+
+// Add default functionality here for any IBC_DamageableInterface functions that are not pure virtual.

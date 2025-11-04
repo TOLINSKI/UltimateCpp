@@ -27,6 +27,13 @@ protected:
 	virtual void BeginPlay() override;
 	
 // Base Craft Interface
+// ====================
+public:
+	//~ Begin Base Craft Interactable Interface
+	virtual void Interact_Implementation(AActor* InstigatorActor) override;
+	virtual bool CanInteract_Implementation() override;
+	//~ End Case Craft Interactable Interface
+	
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Components")
 	TObjectPtr<USceneComponent> Root;
@@ -46,10 +53,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Components")
 	TObjectPtr<UBC_InteractButtonComponent> BC_ButtonWidget;
 	
-	/** ONLY IN EDITOR: Will change HiddenInGame for the Pickup sphere. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft")
-	bool bShowPickupSphereInEditor;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Interaction")
 	bool bCanInteract;
 	
@@ -58,7 +61,4 @@ protected:
 
 	UFUNCTION()
 	virtual void OnPickupSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-	
-public:
-	virtual void Interact_Implementation(AActor* InstigatorActor) override;
 };

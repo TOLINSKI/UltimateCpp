@@ -27,7 +27,7 @@ void USlashAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
 
-	if (!Character)
+	if (!(Character && MovementComponent))
 		return;
 	
 	Velocity = MovementComponent->Velocity;

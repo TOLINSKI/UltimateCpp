@@ -20,6 +20,7 @@ ABC_Item::ABC_Item()
 	
 	PickupSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Pickup Sphere"));
 	PickupSphere->SetupAttachment(RootComponent);
+	PickupSphere->bHiddenInGame = false;
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(RootComponent);
@@ -32,7 +33,6 @@ ABC_Item::ABC_Item()
 	
 	BC_Hover = CreateDefaultSubobject<UBC_HoverComponent>(TEXT("Hovering Movement"));
 
-	bShowPickupSphereInEditor = true;
 	bCanInteract = true;
 }
 
@@ -42,10 +42,6 @@ void ABC_Item::BeginPlay()
 
 	PickupSphere->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::ABC_Item::OnPickupSphereBeginOverlap);
 	PickupSphere->OnComponentEndOverlap.AddDynamic(this, &ThisClass::OnPickupSphereEndOverlap);
-
-#if WITH_EDITOR	
-	PickupSphere->SetHiddenInGame(!bShowPickupSphereInEditor);
-#endif
 }
 
 void ABC_Item::OnPickupSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -75,5 +71,10 @@ void ABC_Item::Interact_Implementation(AActor* InstigatorActor)
 {
 	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Cyan, FString::Printf(TEXT("%s Interacts with: %s"), *InstigatorActor->GetName(), *GetName()));
 	UE_LOG(LogSlashItem, Display, TEXT("%s Interacts with: %s"), *InstigatorActor->GetName(), *GetName());
+}
+
+bool ABC_Item::CanInteract_Implementation()
+{
+	return bCanInteract;
 }
 

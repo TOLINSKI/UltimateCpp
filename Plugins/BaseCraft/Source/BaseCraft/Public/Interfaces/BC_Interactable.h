@@ -21,7 +21,9 @@ class BASECRAFT_API IBC_Interactable
 
 public:
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interact")
-	void Interact(AActor* InstigatorActor);
-	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "BaseCraft|Interfaces|Interaction")
+	void Interact(AActor* Interactor);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "BaseCraft|Interfaces|Interaction")
+	bool CanInteract();	
 };
