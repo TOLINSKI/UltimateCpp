@@ -6,6 +6,7 @@
 #include "Components/CapsuleComponent.h"
 #include "DrawDebugHelpers.h"
 #include "kismet/GameplayStatics.h"
+#include "NiagaraFunctionLibrary.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogSlashEnemy, All, All);
 
@@ -22,17 +23,15 @@ ASlashEnemy::ASlashEnemy()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
 }
 
-void ASlashEnemy::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
 void ASlashEnemy::TakeDamage_Implementation(const FVector& ImpactPoint)
 {
 	PlayHitReactMontage(ImpactPoint);
 
 	if (HitSound)
 		UGameplayStatics::PlaySoundAtLocation(this, HitSound, ImpactPoint);
+	
+	if (HitParticles)
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, HitParticles, ImpactPoint);
 }
 
 FName ASlashEnemy::GetHitReactMontageSectionName(const FVector& ImpactPoint) const
@@ -67,21 +66,5 @@ void ASlashEnemy::PlayHitReactMontage(const FVector& ImpactPoint) const
 	}
 }
 
-#if WITH_EDITORONLY_DATA
-void ASlashEnemy::PlaySound()
-{
-	if (HitSound)
-		UGameplayStatics::PlaySoundAtLocation(this, HitSound, GetActorLocation());
-}
-#endif
 
-void ASlashEnemy::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
-void ASlashEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-}
 

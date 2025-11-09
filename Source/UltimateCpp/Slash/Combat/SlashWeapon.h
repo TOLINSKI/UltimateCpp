@@ -6,6 +6,8 @@
 #include "Combat/Melee/BC_CapsuleWeapon.h"
 #include "SlashWeapon.generated.h"
 
+class UNiagaraComponent;
+
 UCLASS()
 class ULTIMATECPP_API ASlashWeapon : public ABC_CapsuleWeapon
 {
@@ -21,4 +23,9 @@ protected:
 // Base Craft Interface
 // ====================
 public:
+	virtual void SetWeaponTrailActive_Implementation(bool bWeaponTrailActive) override;
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Slash|Weapon|FX")
+	TObjectPtr<UNiagaraComponent> WeaponTrailSystem; 
 };

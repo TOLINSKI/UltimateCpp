@@ -11,6 +11,7 @@
 class UAnimMontage;
 class USoundBase;
 class USoundAttenuation;
+class UNiagaraSystem;
 
 UCLASS()
 class ULTIMATECPP_API ASlashEnemy : public ACharacter, public IBC_AttackerInterface, public IBC_DamageableInterface
@@ -19,11 +20,6 @@ class ULTIMATECPP_API ASlashEnemy : public ACharacter, public IBC_AttackerInterf
 
 public:
 	ASlashEnemy();
-	virtual void Tick(float DeltaTime) override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-protected:
-	virtual void BeginPlay() override;
 
 // Slash Interface:
 public:
@@ -37,12 +33,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Slash|Animation")
 	TObjectPtr<UAnimMontage> HitReactMontage; 
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Slash|Animation")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Slash|SFX")
 	TObjectPtr<USoundBase> HitSound; 
 
-public:
-#if WITH_EDITORONLY_DATA
-	UFUNCTION(CallInEditor, BlueprintCallable)
-	void PlaySound();
-#endif
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Slash|VFX")
+	TObjectPtr<UNiagaraSystem> HitParticles; 
 };

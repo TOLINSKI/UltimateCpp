@@ -34,5 +34,8 @@ public:
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="BaseCraft|Weapon")
 	void Attach(USceneComponent* Parent, FName SocketName);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="BaseCraft|Weapon")
+	void SetWeaponTrailActive(bool bWeaponTrailActive);	
 };
 

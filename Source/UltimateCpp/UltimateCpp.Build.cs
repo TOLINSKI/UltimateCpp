@@ -20,7 +20,8 @@ public class UltimateCpp : ModuleRules
 			"UMG",
 			"Slate",
 			"AnimGraphRuntime",
-			"BaseCraft"
+			"BaseCraft",
+			"Niagara"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });

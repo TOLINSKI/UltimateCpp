@@ -15,10 +15,18 @@ class BASECRAFT_API UBC_HitStopComponent : public UActorComponent
 public:
 	UBC_HitStopComponent();
 
-protected:
-	virtual void BeginPlay() override;
+	UFUNCTION(BlueprintCallable, Category = "BaseCraft")
+	void HitStop();
 
-public:
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override;
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft", meta=(ClampMax="1.0", ClampMin = "0.0", UIMin = "0.0", UIMax = "1.0"))
+	float TimeDilation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft", meta=(ClampMin = "0.0", UIMin = "0.0"))
+	float HitStopDuration;
+
+	FTimerHandle HitStopTimer;
+
+private:
+	void HitStopTimeout() const;
 };

@@ -37,8 +37,16 @@ protected:
 // Slash interface:
 public:
 	virtual UObject* GetWeapon_Implementation() override;
-		
+	virtual void SetComboWindowActive_Implementation(bool bComboWindowActive) override;
+	virtual void SetAttackBufferWindowActive_Implementation(bool bAttackBufferWindowActive) override;
+
 private:
+
+	bool bIsComboWindowActive { false };
+	bool bIsAttackBufferWindowActive { false };
+	int32 ComboCount { 0 };
+	bool bAttackBuffer { false };
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Slash|Camera", meta = (AllowPrivateAccess="true"))
 	TObjectPtr<USpringArmComponent> CameraBoom;
 
@@ -64,13 +72,8 @@ private:
 	
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Slash|State", meta = (AllowPrivateAccess = "true"))
 	EAttackQuickState AttackQuickState { EAttackQuickState::EQS_None };
-
-	int32 ComboCount { 0 };
-	bool bAttackQuickCombo { false };
-	bool bAttackBufferFull { false };
 	
 protected:
-	
 	//~ Begin input
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Slash|Input")
 	TObjectPtr<UInputMappingContext> MovementInputMappingContext;
@@ -118,7 +121,7 @@ protected:
 
 	/** Begins playing montage and returns all relevant skeletal meshes. */
 	UFUNCTION(BlueprintCallable, Category = "Slash|Animation")
-	TArray<USkeletalMeshComponent*> PlayMontage_SkeletalMeshHierarchy(UAnimMontage* Montage, const FName& SectionName);
+	void PlayMontage_SkeletalMeshHierarchy(UAnimMontage* Montage, const FName& SectionName);
 
 	/** Begins playing montage and returns all relevant skeletal meshes. */
 	void BindOnMontageEndedDelegate(UAnimMontage* Montage, FOnMontageEnded& Delegate);
@@ -179,6 +182,4 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Slash|CharacterState")
 	FORCEINLINE ECharacterState GetCharacterState() const { return CharacterState; }
-
-	FORCEINLINE void SetAttackQuickCombo(bool bCombo) { bAttackQuickCombo = bCombo;}
 };

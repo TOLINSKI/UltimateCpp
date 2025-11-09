@@ -6,19 +6,25 @@
 
 UBC_HitStopComponent::UBC_HitStopComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
+
+	TimeDilation = 0.025;
+	HitStopDuration = 0.08f;
 }
 
-
-void UBC_HitStopComponent::BeginPlay()
+void UBC_HitStopComponent::HitStop()
 {
-	Super::BeginPlay();
+	if (FMath::IsNearlyZero(HitStopDuration))
+		return;
+	
+	GetOwner()->CustomTimeDilation = TimeDilation;
+	GetWorld()->GetTimerManager().SetTimer(HitStopTimer, this, &UBC_HitStopComponent::HitStopTimeout, HitStopDuration, false);
 }
 
-
-void UBC_HitStopComponent::TickComponent(float DeltaTime, ELevelTick TickType,
-                                         FActorComponentTickFunction* ThisTickFunction)
+void UBC_HitStopComponent::HitStopTimeout() const
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	GetOwner()->CustomTimeDilation = 1.0f;
 }
+
+
 

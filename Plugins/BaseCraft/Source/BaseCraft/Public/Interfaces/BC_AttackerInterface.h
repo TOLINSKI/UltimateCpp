@@ -23,4 +23,10 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "BaseCraft|Interfaces|Attacker")
 	UObject* GetWeapon();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "BaseCraft|Interfaces|Attacker")
+	void SetComboWindowActive(bool bComboWindowActive);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "BaseCraft|Interfaces|Attacker")
+	void SetAttackBufferWindowActive(bool bAttackBufferWindowActive);
 };

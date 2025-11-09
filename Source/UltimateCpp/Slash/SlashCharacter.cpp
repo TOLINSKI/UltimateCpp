@@ -29,10 +29,28 @@ void ASlashCharacter::BeginPlay()
 	Super::BeginPlay();
 }
 
+//~ Begin BC Attacker Interface
 UObject* ASlashCharacter::GetWeapon_Implementation()
 {
 	return GetCurrentWeapon();
 }
+void ASlashCharacter::SetComboWindowActive_Implementation(bool bComboWindowActive)
+{
+	bIsComboWindowActive = bComboWindowActive;
+
+	// When combo window is opened, attack if buffering
+	if (bIsComboWindowActive && bAttackBuffer)
+	{
+		bAttackBuffer = false;
+		AttackQuickCombo();
+		bIsComboWindowActive = false;
+	}
+}
+void ASlashCharacter::SetAttackBufferWindowActive_Implementation(bool bAttackBufferWindowActive)
+{
+	bIsAttackBufferWindowActive = bAttackBufferWindowActive;
+}
+//~ End BC Attacker Interface
 
 void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -229,52 +247,45 @@ void ASlashCharacter::OnWeaponHit(const FHitResult& Hit)
 
 void ASlashCharacter::AttackQuickCombo()
 {
-	if (AttackQuickMontage)
+	if (!AttackQuickMontage)
 	{
-		if (bAttackQuickCombo
-			&& !bAttackBufferFull
-			&& ComboCount < 2)
-		{
-			bAttackBufferFull = true;
-			ComboCount++;
-			return;
-		}
-		
-		// Play Montage
-		FName SectionName = FName(FString::Printf(TEXT("Attack%d"), ComboCount + 1));
-		TArray<USkeletalMeshComponent*> SkeletalMeshes = PlayMontage_SkeletalMeshHierarchy(AttackQuickMontage, SectionName);
-		ActionState = EActionState::EAS_Attacking;
-				
-		// Bind On End Anim Montage Delegate
-		FOnMontageEnded MontageEndedDelegate;
-		MontageEndedDelegate.BindLambda(
-			[&](UAnimMontage* AnimMontage, bool bInterrupted)
-			{
-				bAttackQuickCombo = false;
-				
-				if (bAttackBufferFull)
-				{
-					bAttackBufferFull = false;
-					AttackQuickCombo();
-					return;
-				}
-				
-				bAttackBufferFull = false;
-				ComboCount = 0;
-				ActionState = EActionState::EAS_Unoccupied;
-			});
-		BindOnMontageEndedDelegate(AttackQuickMontage, MontageEndedDelegate);
+		UE_LOG(LogSlashCharacter, Warning, TEXT("Quick attack montage not found."));
+		return;
 	}
+
+	if (bIsAttackBufferWindowActive && !bIsComboWindowActive)
+	{
+		bAttackBuffer = true;
+		return;
+	}
+	
+	ComboCount++;
+	ActionState = EActionState::EAS_Attacking;
+	
+	// Play Montage
+	FName SectionName = FName(FString::Printf(TEXT("Attack%d"), ComboCount));
+	PlayMontage_SkeletalMeshHierarchy(AttackQuickMontage, SectionName);
+			
+	// Bind On End Anim Montage Delegate
+	FOnMontageEnded MontageEndedDelegate;
+	MontageEndedDelegate.BindLambda(
+		[&](UAnimMontage* AnimMontage, bool bInterrupted)
+		{
+			if (bInterrupted)
+				return;
+			
+			bAttackBuffer = false;
+			ComboCount = 0;
+			ActionState = EActionState::EAS_Unoccupied;
+		});
+	BindOnMontageEndedDelegate(AttackQuickMontage, MontageEndedDelegate);
 }
 
-TArray<USkeletalMeshComponent*> ASlashCharacter::PlayMontage_SkeletalMeshHierarchy(UAnimMontage* Montage, const FName& SectionName)
+void ASlashCharacter::PlayMontage_SkeletalMeshHierarchy(UAnimMontage* Montage, const FName& SectionName)
 {
 	if (!ensureMsgf(Montage != nullptr, TEXT("Invalid montage")))
-		return TArray<USkeletalMeshComponent*>();
+		return;
 	
-	// Array of relevant skeletal meshes to return
-	TArray<USkeletalMeshComponent*> Result;
-
 	// Temp array
 	TArray<USceneComponent*> MeshComponents;
 	GetMesh()->GetChildrenComponents(false, MeshComponents);
@@ -286,17 +297,14 @@ TArray<USkeletalMeshComponent*> ASlashCharacter::PlayMontage_SkeletalMeshHierarc
 		{
 			if (UAnimInstance* AnimInstance = SkeletalMesh->GetAnimInstance())
 			{
-				Result.Add(SkeletalMesh);
 				AnimInstance->Montage_Play(Montage);
 				if (!SectionName.IsNone())
 					AnimInstance->Montage_JumpToSection(SectionName);
 			}
 		}
 	}
-	return Result;
 }
-void ASlashCharacter::BindOnMontageEndedDelegate(UAnimMontage* Montage,
-	FOnMontageEnded& Delegate)
+void ASlashCharacter::BindOnMontageEndedDelegate(UAnimMontage* Montage, FOnMontageEnded& Delegate)
 {
 	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
 	{
@@ -321,9 +329,8 @@ bool ASlashCharacter::CanAttack() const
 {
 	return  IsEquipped()
 			&& ActionState != EActionState::EAS_Equipping
-			&& (ActionState == EActionState::EAS_Attacking ? bAttackQuickCombo : true)
-			&& !bAttackBufferFull
+			&& (ActionState == EActionState::EAS_Attacking ? bIsComboWindowActive || bIsAttackBufferWindowActive : true)
+			&& !bAttackBuffer
 			&& ComboCount < 3
-			&& GetMovementComponent()
 			&& !GetMovementComponent()->IsFalling();
 }
