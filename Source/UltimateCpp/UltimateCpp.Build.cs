@@ -21,7 +21,8 @@ public class UltimateCpp : ModuleRules
 			"Slate",
 			"AnimGraphRuntime",
 			"BaseCraft",
-			"Niagara"
+			"Niagara",
+			"GeometryCollectionEngine"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });

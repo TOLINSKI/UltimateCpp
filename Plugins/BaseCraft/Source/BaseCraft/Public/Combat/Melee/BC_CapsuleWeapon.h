@@ -6,7 +6,7 @@
 #include "Combat/BC_MeleeWeapon.h"
 #include "BC_CapsuleWeapon.generated.h"
 
-UCLASS()
+UCLASS(ClassGroup=(BaseCraft))
 class BASECRAFT_API ABC_CapsuleWeapon : public ABC_MeleeWeapon
 {
 	GENERATED_BODY()

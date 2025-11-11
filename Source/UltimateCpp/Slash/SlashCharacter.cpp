@@ -10,6 +10,7 @@
 #include "GameFramework/PawnMovementComponent.h"
 #include "Combat/SlashWeapon.h"
 #include "Interfaces/BC_Interactable.h"
+#include "Components/BC_AttributeComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogSlashCharacter, All, All);
 
@@ -22,6 +23,8 @@ ASlashCharacter::ASlashCharacter()
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(CameraBoom);
+
+	Attributes = CreateDefaultSubobject<UBC_AttributeComponent>(TEXT("Attribute Comp"));
 }
 
 void ASlashCharacter::BeginPlay()

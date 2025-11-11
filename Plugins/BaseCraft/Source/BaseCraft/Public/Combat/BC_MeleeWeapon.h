@@ -11,7 +11,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBC_OnMeleeWeaponTraceHit, const FHi
 
 class UCapsuleComponent;
 
-UCLASS()
+UCLASS(ClassGroup=(BaseCraft))
 class BASECRAFT_API ABC_MeleeWeapon : public AActor, public IBC_WeaponInterface
 {
 	GENERATED_BODY()
@@ -40,11 +40,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Components")
 	TObjectPtr<UStaticMeshComponent> Mesh;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="BaseCraft")
-	TWeakObjectPtr<APawn> OwnerPawn;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Weapon")
 	TEnumAsByte<ECollisionChannel> AttackTraceChannel;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Weapon")
+	float BaseDamage;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Weapon")
 	bool bAttackTraceIgnoreOwner;
@@ -77,7 +77,4 @@ public:
 	
 	UPROPERTY(BlueprintAssignable, Category="BaseCraft|Weapon|Events")
 	FBC_OnMeleeWeaponTraceHit OnMeleeWeaponHit;
-
-	UFUNCTION(BlueprintCallable, Category="BaseCraft|Weapon")
-	void SetOwnerPawn(APawn* Pawn) { OwnerPawn = Pawn; }
 };

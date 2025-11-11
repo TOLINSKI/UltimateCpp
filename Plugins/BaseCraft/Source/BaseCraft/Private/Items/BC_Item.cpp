@@ -8,6 +8,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/RotatingMovementComponent.h"
 #include "Components/BC_InteractButtonComponent.h"
+#include "kismet/GameplayStatics.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogSlashItem, All, All);
 
@@ -24,6 +25,7 @@ ABC_Item::ABC_Item()
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(RootComponent);
+	Mesh->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 
 	RotatingMovement = CreateDefaultSubobject<URotatingMovementComponent>(TEXT("Rotating Movement"));
 
@@ -71,6 +73,9 @@ void ABC_Item::Interact_Implementation(AActor* InstigatorActor)
 {
 	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Cyan, FString::Printf(TEXT("%s Interacts with: %s"), *InstigatorActor->GetName(), *GetName()));
 	UE_LOG(LogSlashItem, Display, TEXT("%s Interacts with: %s"), *InstigatorActor->GetName(), *GetName());
+
+	if (InteractionSound)
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), InteractionSound, GetActorLocation());
 }
 
 bool ABC_Item::CanInteract_Implementation()

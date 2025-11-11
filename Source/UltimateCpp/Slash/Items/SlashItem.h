@@ -6,7 +6,7 @@
 #include "Items/BC_Item.h"
 #include "SlashItem.generated.h"
 
-UCLASS()
+UCLASS(Abstract)
 class ULTIMATECPP_API ASlashItem : public ABC_Item
 {
 	GENERATED_BODY()
@@ -20,6 +20,9 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void EnablePickup();
+	virtual void DisablePickup();
+	
 // Slash Interface
 protected:
 	virtual void OnPickupSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult) override;

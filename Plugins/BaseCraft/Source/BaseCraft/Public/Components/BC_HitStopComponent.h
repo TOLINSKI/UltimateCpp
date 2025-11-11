@@ -7,7 +7,7 @@
 #include "BC_HitStopComponent.generated.h"
 
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup=(BaseCraft), meta=(BlueprintSpawnableComponent))
 class BASECRAFT_API UBC_HitStopComponent : public UActorComponent
 {
 	GENERATED_BODY()

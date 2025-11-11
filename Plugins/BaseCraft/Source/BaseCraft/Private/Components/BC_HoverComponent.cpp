@@ -8,9 +8,9 @@ UBC_HoverComponent::UBC_HoverComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.bStartWithTickEnabled = false;
+	bAutoActivate = true;
 	
 	// Hovering:
-	bShouldHover = true;
 	Amplitude = 5.0f;
 	Frequency = 0.5f;
 	HoverDirection = FVector::UpVector;
@@ -21,11 +21,10 @@ void UBC_HoverComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (bShouldHover)
-	{
-		StartLocation = GetOwner()->GetActorLocation();
+	StartLocation = GetOwner()->GetActorLocation();
+
+	if (bAutoActivate)
 		SetComponentTickEnabled(true);
-	}
 }
 
 void UBC_HoverComponent::TickComponent(float DeltaTime, ELevelTick TickType,
@@ -33,9 +32,17 @@ void UBC_HoverComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (bShouldHover)
+	if (IsActive())
 		Hover(DeltaTime);
 }
+
+void UBC_HoverComponent::SetActive(bool bNewActive, bool bReset)
+{
+	Super::SetActive(bNewActive, bReset);
+
+	SetComponentTickEnabled(bNewActive);
+}
+
 //~ Begin Hovering
 void UBC_HoverComponent::Hover(float DeltaTime)
 {

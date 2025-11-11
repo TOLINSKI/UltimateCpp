@@ -25,9 +25,6 @@ public:
 protected:
 	virtual void Interact_Implementation(AActor* InstigatorActor) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Slash|Weapon")
-	TObjectPtr<USoundBase> EquipSound;
-
 	/** The actual weapon class to spawn when collected. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Slash|Weapon")
 	TSubclassOf<ASlashWeapon> WeaponClass;

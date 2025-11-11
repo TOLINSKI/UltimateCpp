@@ -18,7 +18,8 @@ ABC_MeleeWeapon::ABC_MeleeWeapon()
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(Root);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	
+
+	BaseDamage = 25.0f;
 	AttackTraceChannel = ECC_Visibility;
 	bAttackTraceIgnoreOwner = true;
 	bHitOncePerSwing = true;
@@ -37,8 +38,8 @@ void ABC_MeleeWeapon::MakeActorsToIgnore(TArray<AActor*>& OutActorsToIgnore)
 {
 	OutActorsToIgnore.Add(this);
 	
-	if (APawn* Pawn = OwnerPawn.Get())
-		OutActorsToIgnore.Add(Pawn);
+	if (APawn* OwnerPawn = GetInstigator())
+		OutActorsToIgnore.Add(OwnerPawn);
 	
 	if (bHitOncePerSwing)
 	{
@@ -75,7 +76,7 @@ void ABC_MeleeWeapon::TickAttackLogic()
 		if (HitActor->Implements<UBC_DamageableInterface>())
 		{
 			FVector ImpactPoint = Hit.ImpactPoint;
-			IBC_DamageableInterface::Execute_TakeDamage(HitActor, ImpactPoint);
+			IBC_DamageableInterface::Execute_TakeDamage(HitActor, ImpactPoint, BaseDamage);
 		}
 
 		// Broadcast Delegate
@@ -91,7 +92,7 @@ ABC_MeleeWeapon* ABC_MeleeWeapon::CreateWeapon(APawn* OwnerPawn, TSubclassOf<ABC
 	ABC_MeleeWeapon* NewWeapon = OwnerPawn->GetWorld()->SpawnActor<ABC_MeleeWeapon>(WeaponClass);
 	check(NewWeapon != nullptr);
 
-	NewWeapon->SetOwnerPawn(OwnerPawn);
+	NewWeapon->SetInstigator(OwnerPawn);
 
 	return NewWeapon;
 }

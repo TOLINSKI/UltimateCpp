@@ -18,6 +18,7 @@ struct FInputActionValue;
 class ABC_Item;
 class UAnimMontage;
 class ASlashWeapon;
+class UBC_AttributeComponent;
 
 UCLASS()
 class ULTIMATECPP_API ASlashCharacter : public ACharacter, public IBC_AttackerInterface, public IBC_DamageableInterface
@@ -52,7 +53,10 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Slash|Camera", meta = (AllowPrivateAccess="true"))
 	TObjectPtr<UCameraComponent> Camera;
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Slash|Camera", meta = (AllowPrivateAccess="true"))
+	TObjectPtr<UBC_AttributeComponent> Attributes; 
+
 	//~ Begin input 
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);

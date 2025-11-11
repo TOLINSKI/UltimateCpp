@@ -4,6 +4,9 @@
 #include "SlashItem.h"
 
 #include "SlashCharacter.h"
+#include "Components/BC_HoverComponent.h"
+#include "Components/SphereComponent.h"
+#include "GameFramework/RotatingMovementComponent.h"
 
 
 ASlashItem::ASlashItem()
@@ -14,7 +17,6 @@ ASlashItem::ASlashItem()
 void ASlashItem::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void ASlashItem::Tick(float DeltaTime)
@@ -22,8 +24,22 @@ void ASlashItem::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+void ASlashItem::EnablePickup()
+{
+	PickupSphere->SetGenerateOverlapEvents(true);
+	BC_Hover->SetActive(true);
+	RotatingMovement->SetActive(true);
+}
+
+void ASlashItem::DisablePickup()
+{
+	PickupSphere->SetGenerateOverlapEvents(false);
+	BC_Hover->SetActive(false);
+	RotatingMovement->SetActive(false);
+}
+
 void ASlashItem::OnPickupSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+                                            UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	Super::OnPickupSphereBeginOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
 	

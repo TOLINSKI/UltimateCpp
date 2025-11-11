@@ -8,7 +8,7 @@
 #include "Interfaces/BC_DamageableInterface.h"
 #include "BC_Enemy.generated.h"
 
-UCLASS()
+UCLASS(ClassGroup=(BaseCraft))
 class BASECRAFT_API ABC_Enemy : public ACharacter, public IBC_AttackerInterface, public IBC_DamageableInterface
 {
 	GENERATED_BODY()

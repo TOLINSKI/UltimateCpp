@@ -18,12 +18,12 @@ void ASlashItem_Weapon::Equip(ASlashCharacter* Character)
 {
 	ASlashWeapon* NewWeapon = Cast<ASlashWeapon>(ABC_MeleeWeapon::CreateWeapon(Character, WeaponClass));
 	check(NewWeapon != nullptr);
-	
+
+	NewWeapon->SetInstigator(Character);
 	Character->EquipWeapon(NewWeapon);
-	if (EquipSound)
-	{
-		UGameplayStatics::PlaySoundAtLocation(this, EquipSound, GetActorLocation());
-	}
+
+	if (InteractionSound)
+		UGameplayStatics::PlaySoundAtLocation(this, InteractionSound, GetActorLocation());
 }
 
 void ASlashItem_Weapon::Interact_Implementation(AActor* InstigatorActor)

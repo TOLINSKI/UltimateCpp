@@ -7,6 +7,7 @@
 #include "DrawDebugHelpers.h"
 #include "kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Components/BC_AttributeComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogSlashEnemy, All, All);
 
@@ -21,17 +22,24 @@ ASlashEnemy::ASlashEnemy()
 
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
+
+	Attributes = CreateDefaultSubobject<UBC_AttributeComponent>(TEXT("Attribute Comp"));
 }
 
-void ASlashEnemy::TakeDamage_Implementation(const FVector& ImpactPoint)
+void ASlashEnemy::TakeDamage_Implementation(const FVector& ImpactPoint, float Damage)
 {
-	PlayHitReactMontage(ImpactPoint);
-
 	if (HitSound)
 		UGameplayStatics::PlaySoundAtLocation(this, HitSound, ImpactPoint);
 	
 	if (HitParticles)
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, HitParticles, ImpactPoint);
+
+	Attributes->DecreaseHealthBy(Damage);
+
+	UE_LOG(LogSlashEnemy, Display, TEXT("Health to remove: %f"), Damage);
+	UE_LOG(LogSlashEnemy, Display, TEXT("Health left: %f"), Attributes->GetHealth());
+	
+	PlayHitReactMontage(ImpactPoint);
 }
 
 FName ASlashEnemy::GetHitReactMontageSectionName(const FVector& ImpactPoint) const
