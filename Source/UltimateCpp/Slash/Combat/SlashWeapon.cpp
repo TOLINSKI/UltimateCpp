@@ -14,6 +14,8 @@ ASlashWeapon::ASlashWeapon()
 	WeaponTrailSystem->SetupAttachment(Mesh, TEXT("trail_socket"));
 	WeaponTrailSystem->SetAutoActivate(false);
 	WeaponTrailSystem->SetActive(false);
+
+	WeaponType = ESlashWeaponType::EWT_None;
 }
 
 void ASlashWeapon::BeginPlay()

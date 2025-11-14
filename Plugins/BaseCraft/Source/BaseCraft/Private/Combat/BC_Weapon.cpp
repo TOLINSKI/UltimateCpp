@@ -1,13 +1,13 @@
 ﻿// Copyright Benski Game Works 2025, All rights reserved.
 
 
-#include "Combat/BC_MeleeWeapon.h"
+#include "Combat/BC_Weapon.h"
 #include "GameFramework/Pawn.h"
 #include "DrawDebugHelpers.h"
 #include "Interfaces/BC_DamageableInterface.h"
 
 
-ABC_MeleeWeapon::ABC_MeleeWeapon()
+ABC_Weapon::ABC_Weapon()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = false;
@@ -28,38 +28,42 @@ ABC_MeleeWeapon::ABC_MeleeWeapon()
 	bDebugHitsSeparate = true;
 	DrawDebugHitsTime = 5.0f;
 }
-
-void ABC_MeleeWeapon::BeginPlay()
+void ABC_Weapon::BeginPlay()
 {
 	Super::BeginPlay();
 }
+void ABC_Weapon::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	
+	TickAttackLogic();
+}
 
-void ABC_MeleeWeapon::MakeActorsToIgnore(TArray<AActor*>& OutActorsToIgnore)
+void ABC_Weapon::MakeActorsToIgnore(TArray<AActor*>& OutActorsToIgnore)
 {
 	OutActorsToIgnore.Add(this);
 	
-	if (APawn* OwnerPawn = GetInstigator())
+	if (APawn* OwnerPawn = GetInstigator(); bAttackTraceIgnoreOwner)
 		OutActorsToIgnore.Add(OwnerPawn);
 	
 	if (bHitOncePerSwing)
 	{
-		for (TWeakObjectPtr<AActor> WeakActorPtr : CurrentHitActors)
+		for (TWeakObjectPtr<AActor> HitActor : CurrentHitActors)
 		{
-			if (AActor* Actor = WeakActorPtr.Get())
-			{
-				OutActorsToIgnore.Add(Actor);
-			}
+			if (AActor* AlreadyHitActor = HitActor.Get())
+				OutActorsToIgnore.Add(AlreadyHitActor);
 		}
 	}
 }
 
-void ABC_MeleeWeapon::TickAttackLogic()
+void ABC_Weapon::TickAttackLogic()
 {
 	TArray<AActor*> ActorsToIgnore; 
 	MakeActorsToIgnore(ActorsToIgnore);
 
 	// Do Attack Trace:
-	if (FHitResult Hit; DoAttackTrace_Implementation(Hit, ActorsToIgnore))
+	FHitResult Hit;
+	if (DoAttackTrace_Implementation(Hit, ActorsToIgnore))
 	{
 		AActor* HitActor = Hit.GetActor();
 
@@ -72,24 +76,17 @@ void ABC_MeleeWeapon::TickAttackLogic()
 			CurrentHitActors.Add(HitActor);
 		}
 
-		// Apply Damage to hit actor
-		if (HitActor->Implements<UBC_DamageableInterface>())
-		{
-			FVector ImpactPoint = Hit.ImpactPoint;
-			IBC_DamageableInterface::Execute_TakeDamage(HitActor, ImpactPoint, BaseDamage);
-		}
-
 		// Broadcast Delegate
-		OnMeleeWeaponHit.Broadcast(Hit);
+		OnWeaponHit.Broadcast(Hit);
 	}
 }
 
-ABC_MeleeWeapon* ABC_MeleeWeapon::CreateWeapon(APawn* OwnerPawn, TSubclassOf<ABC_MeleeWeapon> WeaponClass)
+ABC_Weapon* ABC_Weapon::CreateWeapon(APawn* OwnerPawn, TSubclassOf<ABC_Weapon> WeaponClass)
 {
 	if (!ensureMsgf(OwnerPawn != nullptr, TEXT("Owner pawn is null.")))
 		return nullptr;
 
-	ABC_MeleeWeapon* NewWeapon = OwnerPawn->GetWorld()->SpawnActor<ABC_MeleeWeapon>(WeaponClass);
+	ABC_Weapon* NewWeapon = OwnerPawn->GetWorld()->SpawnActor<ABC_Weapon>(WeaponClass);
 	check(NewWeapon != nullptr);
 
 	NewWeapon->SetInstigator(OwnerPawn);
@@ -97,29 +94,22 @@ ABC_MeleeWeapon* ABC_MeleeWeapon::CreateWeapon(APawn* OwnerPawn, TSubclassOf<ABC
 	return NewWeapon;
 }
 
-void ABC_MeleeWeapon::Attach_Implementation(USceneComponent* Parent, FName SocketName)
+//~ Begin Weapon Interface
+void ABC_Weapon::Attach_Implementation(USceneComponent* Parent, FName SocketName)
 {
 	AttachToComponent(Parent, FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
 }
-
-void ABC_MeleeWeapon::BeginAttackTracing_Implementation()
+void ABC_Weapon::BeginAttackTracing_Implementation()
 {
 	CurrentHitActors.Empty();
 	SetActorTickEnabled(true);
 }
-
-void ABC_MeleeWeapon::EndAttackTracing_Implementation()
+void ABC_Weapon::EndAttackTracing_Implementation()
 {
 	SetActorTickEnabled(false);
 	CurrentHitActors.Empty();
 }
-
-void ABC_MeleeWeapon::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-	
-	TickAttackLogic();
-}
+//~ End Weapon Interface
 
 
 

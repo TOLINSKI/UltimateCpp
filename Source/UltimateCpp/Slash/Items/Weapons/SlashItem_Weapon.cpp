@@ -7,6 +7,7 @@
 #include "kismet/GameplayStatics.h"
 #include "Combat/SlashWeapon.h"
 #include "Combat/Melee/BC_CapsuleWeapon.h"
+#include "Interfaces/BC_AttackerInterface.h"
 
 
 ASlashItem_Weapon::ASlashItem_Weapon()
@@ -16,12 +17,11 @@ ASlashItem_Weapon::ASlashItem_Weapon()
 
 void ASlashItem_Weapon::Equip(ASlashCharacter* Character)
 {
-	ASlashWeapon* NewWeapon = Cast<ASlashWeapon>(ABC_MeleeWeapon::CreateWeapon(Character, WeaponClass));
+	ASlashWeapon* NewWeapon = Cast<ASlashWeapon>(ABC_Weapon::CreateWeapon(Character, WeaponClass));
 	check(NewWeapon != nullptr);
 
-	NewWeapon->SetInstigator(Character);
-	Character->EquipWeapon(NewWeapon);
-
+	IBC_AttackerInterface::Execute_EquipWeapon(Character, NewWeapon);
+	
 	if (InteractionSound)
 		UGameplayStatics::PlaySoundAtLocation(this, InteractionSound, GetActorLocation());
 }

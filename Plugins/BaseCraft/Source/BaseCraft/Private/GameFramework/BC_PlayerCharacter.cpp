@@ -1,25 +1,30 @@
 ﻿// Copyright Benski Game Works 2025, All rights reserved.
 
 
-#include "BC_Character.h"
+#include "GameFramework//BC_PlayerCharacter.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Camera/CameraComponent.h"
+#include "Components/BC_MontageComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Interfaces/BC_Interactable.h"
 
 DEFINE_LOG_CATEGORY_STATIC(Log_BC_Character, All, All);
 
-ABC_Character::ABC_Character()
+ABC_PlayerCharacter::ABC_PlayerCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+	
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm Comp"));
 	CameraBoom->SetupAttachment(RootComponent);
+	CameraBoom->bUsePawnControlRotation = true;
 
-	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	bUseControllerRotationYaw = false;
+
+	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera Comp"));
 	Camera->SetupAttachment(CameraBoom);
 }
-void ABC_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void ABC_PlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
@@ -46,6 +51,12 @@ void ABC_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 		// Looking
 		EnhancedInputComponent->BindAction(MouseLookAction, ETriggerEvent::Triggered, this, &ThisClass::Look);
+
+		// Interacting
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ThisClass::Interact);
+
+		// Attacking
+		EnhancedInputComponent->BindAction(QuickAttackAction, ETriggerEvent::Started, this, &ThisClass::QuickAttack_Implementation);
 	}
 	else
 	{
@@ -55,28 +66,41 @@ void ABC_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 // Base Craft
 // ===========
-void ABC_Character::Move(const FInputActionValue& Value)
+
+//~ Begin Input
+void ABC_PlayerCharacter::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
 	DoMove(MovementVector.X, MovementVector.Y);
 }
-void ABC_Character::Look(const FInputActionValue& Value)
+void ABC_PlayerCharacter::Look(const FInputActionValue& Value)
 {
 	FVector2D LookVector = Value.Get<FVector2D>();
 	float Yaw = LookVector.X;
 	float Pitch = LookVector.Y;
 	DoLook(Yaw, Pitch);
 }
-void ABC_Character::Jump()
+void ABC_PlayerCharacter::Jump()
 {
 	DoJump();
 }
-void ABC_Character::StopJumping()
+void ABC_PlayerCharacter::StopJumping()
 {
 	DoStopJumping();
 }
+void ABC_PlayerCharacter::Interact()
+{
+	DoInteract();
+}
+void ABC_PlayerCharacter::QuickAttack_Implementation()
+{
+	Super::QuickAttack_Implementation();
+	
+	DoQuickAttack();
+}
+//~ End Input
 
-void ABC_Character::DoMove(const float Right, const float Forward)
+void ABC_PlayerCharacter::DoMove(const float Right, const float Forward)
 {
 	if (GetController() != nullptr)
 	{
@@ -95,7 +119,7 @@ void ABC_Character::DoMove(const float Right, const float Forward)
 		AddMovementInput(RightDirection, Right);
 	}
 }
-void ABC_Character::DoLook(const float Yaw, const float Pitch)
+void ABC_PlayerCharacter::DoLook(const float Yaw, const float Pitch)
 {
 	if (GetController() != nullptr)
 	{
@@ -104,11 +128,30 @@ void ABC_Character::DoLook(const float Yaw, const float Pitch)
 		AddControllerPitchInput(Pitch);
 	}
 }
-void ABC_Character::DoJump()
+void ABC_PlayerCharacter::DoJump()
 {
 	Super::Jump();
 }
-void ABC_Character::DoStopJumping()
+void ABC_PlayerCharacter::DoStopJumping()
 {
 	Super::StopJumping();
+}
+void ABC_PlayerCharacter::DoInteract()
+{
+	if (AActor* Item = GetInteractable())
+	{
+		IBC_Interactable::Execute_Interact(Item, this);
+	}
+}
+void ABC_PlayerCharacter::DoQuickAttack()
+{
+	GetMontageManager()->PlayMontage(EBC_MontageType::EMT_QuickAttack);
+}
+void ABC_PlayerCharacter::SetInteractable(AActor* NewInteractable)
+{
+	// If Item is valid but doesn't implement IBC_Interactable interface >> Do nothing
+	if (NewInteractable && !ensureMsgf(NewInteractable->Implements<UBC_Interactable>(), TEXT("Attempt to set Item that does not implement IBC_Interactable interface.")))
+		return;
+
+	Interactable = NewInteractable;
 }

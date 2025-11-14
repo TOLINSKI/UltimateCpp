@@ -42,13 +42,7 @@ void ABC_CapsuleWeapon::OnConstruction(const FTransform& Transform)
 }
 #endif
 
-void ABC_CapsuleWeapon::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
-bool ABC_CapsuleWeapon::DoAttackTrace_Implementation(FHitResult& HitResult, const TArray<AActor*>& ActorsToIgnore)
+bool ABC_CapsuleWeapon::DoAttackTrace_Implementation(FHitResult& OutHit, const TArray<AActor*>& ActorsToIgnore)
 {
 	FCollisionShape Sphere { FCollisionShape::MakeSphere(AttackTraceRadius) };
 	
@@ -56,7 +50,7 @@ bool ABC_CapsuleWeapon::DoAttackTrace_Implementation(FHitResult& HitResult, cons
 	CollisionParams.AddIgnoredActors(ActorsToIgnore);
 
 	bool bIsHit = GetWorld()->SweepSingleByChannel(
-		HitResult,
+		OutHit,
 		TraceStart->GetComponentLocation(),
 		TraceEnd->GetComponentLocation(),
 		FQuat::Identity,
@@ -67,7 +61,7 @@ bool ABC_CapsuleWeapon::DoAttackTrace_Implementation(FHitResult& HitResult, cons
 		);
 
 #if WITH_EDITOR
-	DrawDebugAttackCapsule(bIsHit, HitResult);
+	DrawDebugAttackCapsule(bIsHit, OutHit);
 #endif
 	
 	return bIsHit;
@@ -83,7 +77,6 @@ FVector ABC_CapsuleWeapon::GetTraceRadiusStep() const
 	}
 	return FVector::OneVector;
 }
-
 float ABC_CapsuleWeapon::GetTraceCapsuleHalfHeight() const
 {
 	if (TraceStart && TraceEnd)
@@ -91,7 +84,6 @@ float ABC_CapsuleWeapon::GetTraceCapsuleHalfHeight() const
 
 	return 22.0f;
 }
-
 FQuat ABC_CapsuleWeapon::GetTraceCapsuleRotation() const
 {
 	if (TraceStart && TraceEnd)
@@ -104,7 +96,6 @@ FQuat ABC_CapsuleWeapon::GetTraceCapsuleRotation() const
 	
 	return FQuat::Identity;
 }
-
 #if WITH_EDITOR
 void ABC_CapsuleWeapon::DrawDebugAttackCapsule(const bool bIsHit, const FHitResult& HitResult) const
 {

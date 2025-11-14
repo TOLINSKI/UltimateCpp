@@ -36,6 +36,4 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Interaction")
 	void SetButtonText(FText& Text);
-
-
 };

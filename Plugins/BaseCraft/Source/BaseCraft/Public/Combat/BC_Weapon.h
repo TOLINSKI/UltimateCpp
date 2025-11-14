@@ -5,21 +5,21 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Interfaces/BC_WeaponInterface.h"
-#include "BC_MeleeWeapon.generated.h"
+#include "BC_Weapon.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBC_OnMeleeWeaponTraceHit, const FHitResult&, HitResult);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBC_OnWeaponHit, const FHitResult&, HitResult);
 
 class UCapsuleComponent;
 
 UCLASS(ClassGroup=(BaseCraft))
-class BASECRAFT_API ABC_MeleeWeapon : public AActor, public IBC_WeaponInterface
+class BASECRAFT_API ABC_Weapon : public AActor, public IBC_WeaponInterface
 {
 	GENERATED_BODY()
 
 // UE Interface
 // ============
 public:
-	ABC_MeleeWeapon();
+	ABC_Weapon();
 
 	virtual void Tick(float DeltaTime) override;
 
@@ -73,8 +73,11 @@ private:
 	void MakeActorsToIgnore(TArray<AActor*>& OutActorsToIgnore);
 	
 public:
-	static ABC_MeleeWeapon* CreateWeapon(APawn* OwnerPawn, TSubclassOf<ABC_MeleeWeapon> WeaponClass);
+	static ABC_Weapon* CreateWeapon(APawn* OwnerPawn, TSubclassOf<ABC_Weapon> WeaponClass);
 	
 	UPROPERTY(BlueprintAssignable, Category="BaseCraft|Weapon|Events")
-	FBC_OnMeleeWeaponTraceHit OnMeleeWeaponHit;
+	FBC_OnWeaponHit OnWeaponHit;
+
+	UFUNCTION(BlueprintPure, Category="BaseCraft|Weapon|Properties")
+	FORCEINLINE float GetBaseDamage() const { return BaseDamage; }
 };

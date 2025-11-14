@@ -15,9 +15,10 @@ DEFINE_LOG_CATEGORY_STATIC(LogSlashItem, All, All);
 ABC_Item::ABC_Item()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = false;
 
-	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-	RootComponent = Root;
+	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Scene Root"));
+	SetRootComponent(Root);
 	
 	PickupSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Pickup Sphere"));
 	PickupSphere->SetupAttachment(RootComponent);
@@ -31,7 +32,7 @@ ABC_Item::ABC_Item()
 
 	// Base Craft Components:
 	BC_ButtonWidget = CreateDefaultSubobject<UBC_InteractButtonComponent>(TEXT("Interact Button Widget"));
-	BC_ButtonWidget->SetupAttachment(Mesh);
+	BC_ButtonWidget->SetupAttachment(Root);
 	
 	BC_Hover = CreateDefaultSubobject<UBC_HoverComponent>(TEXT("Hovering Movement"));
 

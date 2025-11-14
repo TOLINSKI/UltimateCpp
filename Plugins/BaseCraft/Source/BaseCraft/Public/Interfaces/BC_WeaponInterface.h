@@ -24,7 +24,7 @@ class BASECRAFT_API IBC_WeaponInterface
 public:
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="BaseCraft|Weapon")
-	bool DoAttackTrace(FHitResult& HitResult, const TArray<AActor*>& ActorsToIgnore);
+	bool DoAttackTrace(FHitResult& OutHit, const TArray<AActor*>& ActorsToIgnore);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="BaseCraft|Weapon")
 	void BeginAttackTracing();

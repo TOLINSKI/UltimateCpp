@@ -24,5 +24,5 @@ class BASECRAFT_API IBC_DamageableInterface
 public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "BaseCraft|Interfaces|Damageable")
-	void TakeDamage(const FVector& ImpactPoint, float Damage);
+	void TakeDamage(float Damage, const FHitResult& Hit);
 };

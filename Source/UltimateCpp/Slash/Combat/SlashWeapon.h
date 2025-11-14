@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Combat/Melee/BC_CapsuleWeapon.h"
+#include "Utility/SlashTypes.h"
 #include "SlashWeapon.generated.h"
 
 class UNiagaraComponent;
@@ -20,12 +21,18 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-// Base Craft Interface
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Slash|Weapon")
+	ESlashWeaponType WeaponType;
+
+// Slash Interface
 // ====================
 public:
 	virtual void SetWeaponTrailActive_Implementation(bool bWeaponTrailActive) override;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Slash|Weapon|FX")
-	TObjectPtr<UNiagaraComponent> WeaponTrailSystem; 
+	TObjectPtr<UNiagaraComponent> WeaponTrailSystem;
+
+public:
+	ESlashWeaponType GetWeaponType() const { return WeaponType; }
 };

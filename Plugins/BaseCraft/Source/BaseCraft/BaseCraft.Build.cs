@@ -39,7 +39,11 @@ public class BaseCraft : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"Slate",
-				"SlateCore",
+				"SlateCore", 
+				"StateTreeModule",
+				"GameplayStateTreeModule",
+				"AIModule",
+				"GameplayTags"
 			}
 			);
 		

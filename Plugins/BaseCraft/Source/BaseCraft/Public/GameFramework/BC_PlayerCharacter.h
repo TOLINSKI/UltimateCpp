@@ -3,43 +3,48 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
-#include "Interfaces/BC_AttackerInterface.h"
-#include "Interfaces/BC_DamageableInterface.h"
-#include "BC_Character.generated.h"
+#include "GameFramework/BC_Character.h"
+#include "BC_PlayerCharacter.generated.h"
 
 class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
+class UBC_AttributeComponent;
 
 
-UCLASS()
-class BASECRAFT_API ABC_Character : public ACharacter, public IBC_AttackerInterface, public IBC_DamageableInterface
+UCLASS(Abstract)
+class BASECRAFT_API ABC_PlayerCharacter : public ABC_Character
 {
 	GENERATED_BODY()
 
 public:
-	ABC_Character();
+	ABC_PlayerCharacter();
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
 // Base Craft:
 // ===========
+
 private:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Slash|Camera", meta = (AllowPrivateAccess="true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Slash|Camera", meta = (AllowPrivateAccess="true"))
 	TObjectPtr<USpringArmComponent> CameraBoom;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Slash|Camera", meta = (AllowPrivateAccess="true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Slash|Camera", meta = (AllowPrivateAccess="true"))
 	TObjectPtr<UCameraComponent> Camera;
 
 	//~ Begin input 
-	void Move(const FInputActionValue& Value);
-	void Look(const FInputActionValue& Value);
+	virtual void Move(const FInputActionValue& Value);
+	virtual void Look(const FInputActionValue& Value);
 	virtual void Jump() override;
 	virtual void StopJumping() override;
+	virtual void Interact();
+	virtual void QuickAttack_Implementation() override;
 	//~ End Input
-	
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Slash|Interaction", meta = (AllowPrivateAccess = "true"))
+	TWeakObjectPtr<AActor> Interactable;
+
 protected:
 	//~ Begin input
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Slash|Input")
@@ -58,7 +63,7 @@ protected:
 	TObjectPtr<UInputAction> InteractAction; 
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Slash|Input")
-	TObjectPtr<UInputAction> AttackQuickAction; 
+	TObjectPtr<UInputAction> QuickAttackAction; 
 	
 	UFUNCTION(BlueprintCallable, Category = "Slash|Input")
 	virtual void DoMove(const float Right, const float Forward);
@@ -71,4 +76,18 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category = "Slash|Input")
 	virtual void DoStopJumping();
+
+	UFUNCTION(BlueprintCallable, Category = "Slash|Input")
+	virtual void DoInteract();
+
+	UFUNCTION(BlueprintCallable, Category = "Slash|Input")
+	virtual void DoQuickAttack();
+	
+public:
+	AActor* GetInteractable() const { return Interactable.Get(); }
+	void SetInteractable(AActor* NewInteractable);
+
+	FORCEINLINE UCameraComponent* GetCamera() const { return Camera;}
+	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom;}
+	FORCEINLINE USpringArmComponent* GetSpringArm() const { return CameraBoom;}
 };

@@ -9,13 +9,15 @@ UBC_AttributeComponent::UBC_AttributeComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 
 	MaxHealth = 100.0f;
-	Health = MaxHealth;
+	Health = 100.0f;
 }
 
 
 void UBC_AttributeComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	Health = MaxHealth;
 }
 
 float UBC_AttributeComponent::DecreaseHealthBy(float HealthToRemove)

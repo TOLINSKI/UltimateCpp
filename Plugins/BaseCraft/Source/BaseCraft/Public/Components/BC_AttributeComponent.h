@@ -18,22 +18,28 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Attributes|Health")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Attributes|Health", meta = (AllowPrivateAccess="true"))
 	float Health;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attributes|Health")
 	float MaxHealth;
 
 public:
-	UFUNCTION(BlueprintCallable, Category="Attributes|State")
-	FORCEINLINE bool IsAlive() { return Health > 0.f; }
+	UFUNCTION(BlueprintPure, Category="Attributes|State")
+	FORCEINLINE bool IsAlive() { return Health > 0.0f; }
 
+	UFUNCTION(BlueprintPure, Category="Attributes|Health")
+	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
+
+	UFUNCTION(BlueprintPure, Category="Attributes|Health")
+	FORCEINLINE float GetHealthPercent() const { return MaxHealth > 0.f ? Health / MaxHealth : 0.f; }
+	
 	UFUNCTION(BlueprintPure, Category="Attributes|Health")
 	FORCEINLINE float GetHealth() const { return Health; }
 
 	UFUNCTION(BlueprintCallable, Category="Attributes|State")
 	FORCEINLINE void SetHealth(float NewHealth) { Health = NewHealth; }
-
+	
 	/**
 	 * Decreases then returns the remaining health.
 	 * @param HealthToDecrease The amount of health to decrease

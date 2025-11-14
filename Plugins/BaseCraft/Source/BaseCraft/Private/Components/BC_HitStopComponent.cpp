@@ -14,6 +14,9 @@ UBC_HitStopComponent::UBC_HitStopComponent()
 
 void UBC_HitStopComponent::HitStop()
 {
+	if (!IsActive())
+		return;
+	
 	if (FMath::IsNearlyZero(HitStopDuration))
 		return;
 	

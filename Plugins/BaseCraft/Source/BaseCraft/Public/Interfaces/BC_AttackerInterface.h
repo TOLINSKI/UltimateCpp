@@ -29,4 +29,16 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "BaseCraft|Interfaces|Attacker")
 	void SetAttackBufferWindowActive(bool bAttackBufferWindowActive);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "BaseCraft|Interfaces|Attacker")
+	void QuickAttack();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "BaseCraft|Interfaces|Attacker")
+	void HeavyAttack();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "BaseCraft|Interfaces|Attacker")
+	void EquipWeapon(UObject* Weapon);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "BaseCraft|Interfaces|Attacker")
+	void UnequipWeapon();	
 };
