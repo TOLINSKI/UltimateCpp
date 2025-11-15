@@ -4,14 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Interfaces/BC_DamageableInterface.h"
+#include "Interfaces/BC_Damageable.h"
 #include "SlashBreakableActor.generated.h"
 
 class UGeometryCollectionComponent;
 class USceneComponent;
 
 UCLASS(Abstract)
-class ULTIMATECPP_API ASlashBreakableActor : public AActor, public IBC_DamageableInterface
+class ULTIMATECPP_API ASlashBreakableActor : public AActor, public IBC_Damageable
 {
 	GENERATED_BODY()
 

@@ -14,6 +14,7 @@ class UBC_HoverComponent;
 class UStaticMeshComponent;
 class UBC_InteractButtonComponent;
 class USoundBase;
+class UNiagaraComponent;
 
 UCLASS(BlueprintType, Blueprintable)
 class BASECRAFT_API ABC_Item : public AActor, public IBC_Interactable
@@ -46,13 +47,16 @@ protected:
 	TObjectPtr<UStaticMeshComponent> Mesh;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Components")
-	TObjectPtr<UBC_HoverComponent> BC_Hover;
+	TObjectPtr<UBC_HoverComponent> HoveringMovement;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Components")
 	TObjectPtr<URotatingMovementComponent> RotatingMovement;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Components")
-	TObjectPtr<UBC_InteractButtonComponent> BC_ButtonWidget;
+	TObjectPtr<UBC_InteractButtonComponent> InteractWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Components")
+	TObjectPtr<UNiagaraComponent> GlowEffect;	
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Interaction")
 	bool bCanInteract;

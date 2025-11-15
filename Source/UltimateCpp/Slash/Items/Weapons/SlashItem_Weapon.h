@@ -20,7 +20,7 @@ public:
 // Slash Weapon Interface
 public:
 	UFUNCTION(BlueprintCallable, Category="Slash|Weapon")
-	void Equip(ASlashCharacter* Character);
+	void Equip(APawn* WeaponOwner);
 	
 protected:
 	virtual void Interact_Implementation(AActor* InstigatorActor) override;

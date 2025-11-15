@@ -22,9 +22,6 @@ public:
 	virtual void Interact_Implementation(AActor* Interactor) override;
 	
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item|Treasure")
-	TObjectPtr<class UNiagaraComponent> GlowEffect;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Item|Treasure")
 	int32 Gold;
 	

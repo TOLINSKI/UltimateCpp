@@ -10,10 +10,6 @@
 ASlashTreasure::ASlashTreasure()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
-	GlowEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Niagara Comp"));
-	GlowEffect->SetupAttachment(RootComponent);
-
 	Gold = 5;
 }
 
@@ -29,8 +25,7 @@ void ASlashTreasure::Interact_Implementation(AActor* Interactor)
 	if (ASlashCharacter* Character = Cast<ASlashCharacter>(Interactor))
 	{
 		bCanInteract = false;
-		BC_ButtonWidget->HideButton();
-		Character->SetInteractable(nullptr);
+		InteractWidget->HideButton();
 		Destroy();
 	}
 }

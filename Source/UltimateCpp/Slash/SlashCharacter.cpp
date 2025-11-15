@@ -35,6 +35,8 @@ void ASlashCharacter::OnConstruction(const FTransform& Transform)
 void ASlashCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	ShortSwordMontages->LoadMontages();
 }
 void ASlashCharacter::Tick(float DeltaTime)
 {
@@ -75,6 +77,7 @@ void ASlashCharacter::EquipWeapon_Implementation(UObject* NewWeapon)
 		[this](UAnimMontage* AnimMontage, bool bInterrupted)
 		{
 			ActionState = EActionState::EAS_Unoccupied;
+			CombatState = ESlashCombatState::ESC_Normal;
 		});
 
 	GetMontageManager()->PlayMontageWithEndDelegate(EndDelegate, EBC_MontageType::EMT_EquipWeapon, TEXT("Equip"));
@@ -88,6 +91,8 @@ void ASlashCharacter::UnequipWeapon_Implementation()
 		[this](UAnimMontage* AnimMontage, bool bInterrupted)
 		{
 			ActionState = EActionState::EAS_Unoccupied;
+			CombatState = ESlashCombatState::ESC_None;
+			LastUsedWeapon = GetSlashWeapon();
 			Super::UnequipWeapon_Implementation();
 		});
 
@@ -95,6 +100,42 @@ void ASlashCharacter::UnequipWeapon_Implementation()
 	GetMontageManager()->PlayMontageWithEndDelegate(EndDelegate, EBC_MontageType::EMT_EquipWeapon, TEXT("Unequip"));
 	ActionState = EActionState::EAS_Equipping;
 	CharacterState = ECharacterState::ECS_Unequipped;
+}
+
+void ASlashCharacter::SetInvulnerable_Implementation(bool bInvaulnerable)
+{
+	if (bInvaulnerable)
+		CombatState = ESlashCombatState::ESC_Invulnerable;
+	else
+		CombatState = ESlashCombatState::ESC_Normal;	
+}
+
+void ASlashCharacter::TakeDamage_Implementation(AActor* Causer, float Damage, const FHitResult& Hit)
+{
+	// Ensure vulnerable
+	if (CombatState == ESlashCombatState::ESC_Invulnerable)
+		return;
+	
+	Super::TakeDamage_Implementation(Causer, Damage, Hit);
+
+	// When doing last combo do not stagger
+	if (ActionState == EActionState::EAS_Attacking && ComboCount == 3)
+		return;
+
+	if (ActionState == EActionState::EAS_Attacking)
+		IBC_WeaponInterface::Execute_EndAttackTracing(GetSlashWeapon());
+	
+	FOnMontageEnded EndDelegate;
+	EndDelegate.BindWeakLambda(this,
+		[this](UAnimMontage* AnimMontage, bool bInterrupted)
+		{
+			bAttackBuffer = false;
+			ComboCount = 0;
+			ActionState = EActionState::EAS_Unoccupied;
+		});
+	
+	FName SectionName = GetMontageManager()->GetHitReactMontageSectionName(Causer->GetActorLocation());
+	GetMontageManager()->PlayMontageWithEndDelegate(EndDelegate, EBC_MontageType::EMT_HitReact, SectionName);
 }
 //~ End BC Attacker Interface
 
@@ -111,7 +152,7 @@ void ASlashCharacter::DoInteract()
 	if (IsOccupied())
 		return;
 	
-	if (AActor* Item = GetInteractable())
+	if (AActor* Item = GetNearestInteractable())
 	{
 		IBC_Interactable::Execute_Interact(Item, this);
 		return;
@@ -121,9 +162,9 @@ void ASlashCharacter::DoInteract()
 	{
 		Execute_UnequipWeapon(this);
 	}
-	else if (GetSlashWeapon())
+	else if (LastUsedWeapon)
 	{
-		Execute_EquipWeapon(this, GetSlashWeapon());
+		Execute_EquipWeapon(this, LastUsedWeapon);
 	}
 }
 void ASlashCharacter::DoQuickAttack()
@@ -133,6 +174,25 @@ void ASlashCharacter::DoQuickAttack()
 
 	QuickAttackCombo();
 }
+
+void ASlashCharacter::DoRoll()
+{
+	if (!CanAttack())
+		return;
+	
+	FOnMontageEnded EndDelegate;
+	EndDelegate.BindWeakLambda(this,
+		[this](UAnimMontage* AnimMontage, bool bInterrupted)
+		{
+			CombatState = ESlashCombatState::ESC_Normal;
+			
+			if (!bInterrupted)
+				ActionState = EActionState::EAS_Unoccupied;
+		});
+	
+	GetMontageManager()->PlayMontageWithEndDelegate(EndDelegate, EBC_MontageType::EMT_Roll);
+}
+
 //~ End input
 
 //~ Begin Weapon
@@ -163,7 +223,9 @@ void ASlashCharacter::PlayQuickAttackMontage()
 		[this](UAnimMontage* AnimMontage, bool bInterrupted)
 		{
 			if (bInterrupted)
+			{
 				return;
+			}
 			
 			bAttackBuffer = false;
 			ComboCount = 0;
@@ -208,4 +270,9 @@ bool ASlashCharacter::CanAttack() const
 ASlashWeapon* ASlashCharacter::GetSlashWeapon()
 {
 	return Cast<ASlashWeapon>(Execute_GetWeapon(this));
+}
+
+ESlashWeaponType ASlashCharacter::GetEquippedWeaponType()
+{
+	return GetSlashWeapon() ? GetSlashWeapon()->GetWeaponType() : ESlashWeaponType::EWT_None;
 }

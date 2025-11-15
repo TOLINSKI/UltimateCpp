@@ -6,10 +6,11 @@
 #include "EnhancedInputSubsystems.h"
 #include "Camera/CameraComponent.h"
 #include "Components/BC_MontageComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Interfaces/BC_Interactable.h"
 
-DEFINE_LOG_CATEGORY_STATIC(Log_BC_Character, All, All);
+DEFINE_LOG_CATEGORY_STATIC(Log_BC_PlayerCharacter, All, All);
 
 ABC_PlayerCharacter::ABC_PlayerCharacter()
 {
@@ -57,10 +58,13 @@ void ABC_PlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 		// Attacking
 		EnhancedInputComponent->BindAction(QuickAttackAction, ETriggerEvent::Started, this, &ThisClass::QuickAttack_Implementation);
+		
+		// Rolling
+		EnhancedInputComponent->BindAction(RollAction, ETriggerEvent::Started, this, &ThisClass::Roll);
 	}
 	else
 	{
-		UE_LOG(Log_BC_Character, Error, TEXT("'%s' Failed to find an Enhanced Input component!"), *GetNameSafe(this));
+		UE_LOG(Log_BC_PlayerCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component!"), *GetNameSafe(this));
 	}
 }
 
@@ -98,6 +102,34 @@ void ABC_PlayerCharacter::QuickAttack_Implementation()
 	
 	DoQuickAttack();
 }
+void ABC_PlayerCharacter::Roll()
+{
+	DoRoll();
+}
+
+AActor* ABC_PlayerCharacter::GetNearestInteractable()
+{
+	AActor* NearestInteractable { nullptr };
+	float NearestDistance { INFINITY };
+	TSet<AActor*> OverlappingActors;
+	GetCapsuleComponent()->GetOverlappingActors(OverlappingActors);
+	
+	for (AActor* Actor : OverlappingActors)
+	{
+		if (!Actor->Implements<UBC_Interactable>())
+			continue;
+		
+		float Distance = FVector::Dist(GetActorLocation(), Actor->GetActorLocation());
+		if (Distance < NearestDistance)
+		{
+			NearestDistance = Distance;
+			NearestInteractable = Actor;
+		}
+	}
+	
+	return NearestInteractable;
+}
+
 //~ End Input
 
 void ABC_PlayerCharacter::DoMove(const float Right, const float Forward)
@@ -138,20 +170,16 @@ void ABC_PlayerCharacter::DoStopJumping()
 }
 void ABC_PlayerCharacter::DoInteract()
 {
-	if (AActor* Item = GetInteractable())
+	if (AActor* Interactable = GetNearestInteractable())
 	{
-		IBC_Interactable::Execute_Interact(Item, this);
+		IBC_Interactable::Execute_Interact(Interactable, this);
 	}
 }
 void ABC_PlayerCharacter::DoQuickAttack()
 {
 	GetMontageManager()->PlayMontage(EBC_MontageType::EMT_QuickAttack);
 }
-void ABC_PlayerCharacter::SetInteractable(AActor* NewInteractable)
+void ABC_PlayerCharacter::DoRoll()
 {
-	// If Item is valid but doesn't implement IBC_Interactable interface >> Do nothing
-	if (NewInteractable && !ensureMsgf(NewInteractable->Implements<UBC_Interactable>(), TEXT("Attempt to set Item that does not implement IBC_Interactable interface.")))
-		return;
-
-	Interactable = NewInteractable;
+	
 }

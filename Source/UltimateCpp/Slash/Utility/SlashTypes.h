@@ -18,7 +18,9 @@ enum class EActionState : uint8
 	EAS_None UMETA(DisplayName = "None"),
 	EAS_Unoccupied UMETA(DisplayName = "Unocuppied"),
 	EAS_Attacking UMETA(DisplayName = "Attacking"),
-	EAS_Equipping UMETA(DisplayName = "Equipping")
+	EAS_Equipping UMETA(DisplayName = "Equipping"),
+	EAS_TakingDamage UMETA(DisplayName = "Taking Damage"),
+	EAS_Rolling UMETA(DisplayName = "Rolling")
 };
 
 UENUM(BlueprintType)
@@ -35,4 +37,13 @@ enum class ESlashWeaponType : uint8
 	EWT_GreatSword UMETA(DisplayName = "GreatSword"),
 	EWT_ShortSword UMETA(DisplayName = "ShortSword"),
 	EWT_Dagger UMETA(DisplayName = "Dagger")
+};
+
+
+UENUM(BlueprintType)
+enum class ESlashCombatState : uint8
+{
+	ESC_None UMETA(DisplayName = "None"),
+	ESC_Normal UMETA(DisplayName = "Normal"),
+	ESC_Invulnerable UMETA(DisplayName = "Invulnerable")
 };

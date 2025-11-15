@@ -4,7 +4,7 @@
 #include "Combat/BC_Weapon.h"
 #include "GameFramework/Pawn.h"
 #include "DrawDebugHelpers.h"
-#include "Interfaces/BC_DamageableInterface.h"
+#include "Interfaces/BC_Damageable.h"
 
 
 ABC_Weapon::ABC_Weapon()

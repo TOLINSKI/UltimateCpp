@@ -4,7 +4,7 @@
 #include "Combat/Melee/BC_CapsuleWeapon.h"
 #include "KismetTraceUtils.h"
 #include "Components/CapsuleComponent.h"
-#include "Interfaces/BC_DamageableInterface.h"
+#include "Interfaces/BC_Damageable.h"
 
 
 ABC_CapsuleWeapon::ABC_CapsuleWeapon()

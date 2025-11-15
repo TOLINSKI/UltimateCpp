@@ -26,6 +26,7 @@ void UBC_MontageComponent::LoadMontages()
 			QuickAttack = QuickAttackMontage.Get();
 			HitReact = HitReactMontage.Get();
 			EquipWeapon = EquipWeaponMontage.Get();
+			Roll = RollMontage.Get();
 			
 			bMontagesLoaded = true;
 		});
@@ -34,6 +35,7 @@ void UBC_MontageComponent::LoadMontages()
 	SoftObjectPaths.Add(QuickAttackMontage.ToSoftObjectPath());
 	SoftObjectPaths.Add(HitReactMontage.ToSoftObjectPath());
 	SoftObjectPaths.Add(EquipWeaponMontage.ToSoftObjectPath());
+	SoftObjectPaths.Add(RollMontage.ToSoftObjectPath());
 	
 	StreamableManager.RequestAsyncLoad(SoftObjectPaths, StreamableDelegate);
 }
@@ -55,6 +57,9 @@ void UBC_MontageComponent::PlayMontage(EBC_MontageType MontageType, FName Sectio
 		break;
 	case EMT_EquipWeapon:
 		AnimMontage = EquipWeapon;
+		break;
+	case EMT_Roll:
+		AnimMontage = Roll;
 		break;
 	default:
 		return;
@@ -93,6 +98,9 @@ void UBC_MontageComponent::PlayMontageWithEndDelegate(FOnMontageEnded& EndDelega
 		break;
 	case EMT_EquipWeapon:
 		AnimMontage = EquipWeapon;
+		break;
+	case EMT_Roll:
+		AnimMontage = Roll;
 		break;
 	default:
 		return;
@@ -145,6 +153,12 @@ void UBC_MontageComponent::SetMontage(EBC_MontageType MontageType, TSoftObjectPt
 		break;
 	case EMT_HitReact:
 		HitReactMontage = NewMontage;
+		break;
+	case EMT_EquipWeapon:
+		EquipWeaponMontage = NewMontage;
+		break;
+	case EMT_Roll:
+		RollMontage = NewMontage;
 		break;
 	default:
 		return;

@@ -10,6 +10,7 @@
 #include "CombatEnemy.h"
 #include "Kismet/GameplayStatics.h"
 #include "StateTreeAsyncExecutionContext.h"
+#include "Components/BC_AttributeComponent.h"
 
 bool FStateTreeCharacterGroundedCondition::TestCondition(FStateTreeExecutionContext& Context) const
 {
@@ -269,6 +270,11 @@ EStateTreeRunStatus FStateTreeGetPlayerInfoTask::Tick(FStateTreeExecutionContext
 	// get the character possessed by the first local player
 	InstanceData.TargetPlayerCharacter = Cast<ACharacter>(UGameplayStatics::GetPlayerPawn(InstanceData.Character, 0));
 
+	if (UBC_AttributeComponent* AttributeComponent = InstanceData.TargetPlayerCharacter->GetComponentByClass<UBC_AttributeComponent>())
+	{
+		InstanceData.PlayerHealth = AttributeComponent->GetHealth();
+	}
+	
 	// do we have a valid target?
 	if (InstanceData.TargetPlayerCharacter)
 	{

@@ -13,7 +13,8 @@ enum class EBC_MontageType : uint8
 {
 	EMT_QuickAttack UMETA(DisplayName = "Quick Attack"),
 	EMT_HitReact UMETA(DisplayName = "Hit React"),
-	EMT_EquipWeapon UMETA(DisplayName = "Equip Weapon")
+	EMT_EquipWeapon UMETA(DisplayName = "Equip Weapon"),
+	EMT_Roll UMETA(DisplayName = "Roll")
 };
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -44,6 +45,12 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UAnimMontage> EquipWeapon;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="BaseCraft|Montages|Combat", meta = (AllowPrivateAccess="true"))
+	TSoftObjectPtr<UAnimMontage> RollMontage;
+	
+	UPROPERTY()
+	TObjectPtr<UAnimMontage> Roll;
 	
 public:
 

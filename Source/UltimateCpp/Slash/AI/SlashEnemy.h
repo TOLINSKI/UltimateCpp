@@ -25,7 +25,7 @@ protected:
 	
 // Slash Interface:
 public:
-	virtual void TakeDamage_Implementation(float Damage, const FHitResult& Hit) override;
+	virtual void TakeDamage_Implementation(AActor* Causer, float Damage, const FHitResult& Hit) override;
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Slash|SFX")

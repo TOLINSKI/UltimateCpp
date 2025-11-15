@@ -6,7 +6,8 @@
 #include "DrawDebugHelpers.h"
 #include "kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
-#include "Components/BC_MontageComponent.h"
+#include "Interfaces/BC_WeaponInterface.h"
+#include "Combat/BC_Weapon.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogSlashEnemy, All, All);
 
@@ -20,15 +21,20 @@ void ASlashEnemy::BeginPlay()
 	Super::BeginPlay();
 }
 
-void ASlashEnemy::TakeDamage_Implementation(float Damage, const FHitResult& Hit)
+void ASlashEnemy::TakeDamage_Implementation(AActor* Causer, float Damage, const FHitResult& Hit)
 {
-	Super::TakeDamage_Implementation(Damage, Hit);
+	Super::TakeDamage_Implementation(Causer, Damage, Hit);
 	
 	if (HitSound)
 		UGameplayStatics::PlaySoundAtLocation(this, HitSound, Hit.ImpactPoint);
 	
 	if (HitParticles)
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, HitParticles, Hit.ImpactPoint);
+
+	if (ABC_Weapon* Weapon = EquippedWeapon.Get())
+	{
+		IBC_WeaponInterface::Execute_EndAttackTracing(Weapon);
+	}
 }
 
 // void ASlashEnemy::HandleDeath()

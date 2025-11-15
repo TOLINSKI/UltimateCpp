@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "Interfaces/BC_AttackerInterface.h"
-#include "Interfaces/BC_DamageableInterface.h"
+#include "Interfaces/BC_Attacker.h"
+#include "Interfaces/BC_Damageable.h"
 #include "BC_Character.generated.h"
 
 class UBC_MontageComponent;
@@ -14,7 +14,7 @@ class UBC_HitStopComponent;
 class ABC_Weapon;
 
 UCLASS(Abstract)
-class BASECRAFT_API ABC_Character : public ACharacter, public IBC_AttackerInterface, public IBC_DamageableInterface
+class BASECRAFT_API ABC_Character : public ACharacter, public IBC_Attacker, public IBC_Damageable
 {
 	GENERATED_BODY()
 
@@ -56,7 +56,7 @@ public:
 	//~ End BC Attacker Interface
 
 	//~ Begin BC Damageable Interface
-	virtual void TakeDamage_Implementation(float Damage, const FHitResult& Hit) override;
+	virtual void TakeDamage_Implementation(AActor* Causer, float Damage, const FHitResult& Hit) override;
 	//~ Begin BC Damageable Interface
 
 	FORCEINLINE UBC_MontageComponent* GetMontageManager() const { return MontageManager; }

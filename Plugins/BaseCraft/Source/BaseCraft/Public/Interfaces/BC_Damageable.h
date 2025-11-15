@@ -4,11 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "BC_DamageableInterface.generated.h"
+#include "BC_Damageable.generated.h"
 
 // This class does not need to be modified.
 UINTERFACE()
-class UBC_DamageableInterface : public UInterface
+class UBC_Damageable : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -16,7 +16,7 @@ class UBC_DamageableInterface : public UInterface
 /**
  * 
  */
-class BASECRAFT_API IBC_DamageableInterface
+class BASECRAFT_API IBC_Damageable
 {
 	GENERATED_BODY()
 
@@ -24,5 +24,5 @@ class BASECRAFT_API IBC_DamageableInterface
 public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "BaseCraft|Interfaces|Damageable")
-	void TakeDamage(float Damage, const FHitResult& Hit);
+	void TakeDamage(AActor* Causer, float Damage, const FHitResult& Hit);
 };

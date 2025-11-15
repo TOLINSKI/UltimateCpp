@@ -36,7 +36,12 @@ public:
 	virtual void SetAttackBufferWindowActive_Implementation(bool bAttackBufferWindowActive) override;
 	virtual void EquipWeapon_Implementation(UObject* Weapon) override;
 	virtual void UnequipWeapon_Implementation() override;
+	virtual void SetInvulnerable_Implementation(bool bInvulnerable) override;
 	//~ End Attacker Interface
+
+	//~ Begin Damageable Interface
+	virtual void TakeDamage_Implementation(AActor* Causer, float Damage, const FHitResult& Hit) override;
+	//~ End Damageable Interface
 	
 private:
 
@@ -56,7 +61,13 @@ private:
 	
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Slash|State", meta = (AllowPrivateAccess = "true"))
 	EAttackQuickState AttackQuickState { EAttackQuickState::EQS_None };
+	
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Slash|State", meta = (AllowPrivateAccess = "true"))
+	ESlashCombatState CombatState { ESlashCombatState::ESC_None };
 
+	UPROPERTY()
+	ASlashWeapon* LastUsedWeapon;
+	
 	void QuickAttackCombo();
 
 	void PlayQuickAttackMontage();
@@ -68,6 +79,7 @@ protected:
 	virtual void DoMove(const float RightVal, const float ForwardVal) override;
 	virtual void DoInteract() override;
 	virtual void DoQuickAttack() override;
+	virtual void DoRoll() override;
 	//~ End input
 
 	//~ Begin Weapons
@@ -108,4 +120,10 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Slash|CharacterState")
 	FORCEINLINE ECharacterState GetCharacterState() const { return CharacterState; }
+
+	UFUNCTION(BlueprintPure, Category = "Slash|Weapon")
+	ESlashWeaponType GetEquippedWeaponType();
+	
+	UFUNCTION(BlueprintPure, Category = "Slash|Weapon")
+	ESlashCombatState GetCombatState() const { return CombatState; }
 };

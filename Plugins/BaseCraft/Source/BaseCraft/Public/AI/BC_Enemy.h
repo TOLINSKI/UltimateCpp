@@ -27,7 +27,7 @@ protected:
 // Base Craft Interface
 public:
 	//~ Begin Damageable Interface
-	virtual void TakeDamage_Implementation(float Damage, const FHitResult& Hit) override;
+	virtual void TakeDamage_Implementation(AActor* Causer, float Damage, const FHitResult& Hit) override;
 	//~ End Damageable interface
 
 	void SendStateTreeEvent(const FName& GamePlayTagName);
@@ -56,4 +56,8 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category="BaseCraft|AI")
 	virtual AActor* GetNextPatrolTarget();
+	
+	UFUNCTION(BlueprintCallable, Category="BaseCraft|AI")
+	void SetShowHealthBar(bool bShowHealthBar);
+	
 };

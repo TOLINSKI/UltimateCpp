@@ -40,10 +40,8 @@ private:
 	virtual void StopJumping() override;
 	virtual void Interact();
 	virtual void QuickAttack_Implementation() override;
+	virtual void Roll();
 	//~ End Input
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Slash|Interaction", meta = (AllowPrivateAccess = "true"))
-	TWeakObjectPtr<AActor> Interactable;
 
 protected:
 	//~ Begin input
@@ -61,9 +59,12 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Slash|Input")
 	TObjectPtr<UInputAction> InteractAction; 
-
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Slash|Input")
 	TObjectPtr<UInputAction> QuickAttackAction; 
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Slash|Input")
+	TObjectPtr<UInputAction> RollAction; 
 	
 	UFUNCTION(BlueprintCallable, Category = "Slash|Input")
 	virtual void DoMove(const float Right, const float Forward);
@@ -83,10 +84,12 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Slash|Input")
 	virtual void DoQuickAttack();
 	
+	UFUNCTION(BlueprintCallable, Category = "Slash|Input")
+	virtual void DoRoll();	
+	
+	AActor* GetNearestInteractable();	
+		
 public:
-	AActor* GetInteractable() const { return Interactable.Get(); }
-	void SetInteractable(AActor* NewInteractable);
-
 	FORCEINLINE UCameraComponent* GetCamera() const { return Camera;}
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom;}
 	FORCEINLINE USpringArmComponent* GetSpringArm() const { return CameraBoom;}

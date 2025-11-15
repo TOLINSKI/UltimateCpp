@@ -11,6 +11,8 @@
 #include "Components/StateTreeAIComponent.h"
 #include "Perception/AISense_Sight.h"
 #include "GameplayTagsManager.h"
+#include "GameFramework/BC_PlayerCharacter.h"
+#include "kismet/GameplayStatics.h"
 #include "UI/BC_HealthBarWidget.h"
 
 DEFINE_LOG_CATEGORY_STATIC(Log_BC_Enemy, All, All);
@@ -56,18 +58,30 @@ void ABC_Enemy::BeginPlay()
 	}
 }
 
-void ABC_Enemy::TakeDamage_Implementation(float Damage, const FHitResult& Hit)
+void ABC_Enemy::TakeDamage_Implementation(AActor* Causer, float Damage, const FHitResult& Hit)
 {
-	Super::TakeDamage_Implementation(Damage, Hit);
+	Super::TakeDamage_Implementation(Causer, Damage, Hit);
 
 	if (UBC_HealthBarWidget* HealthBarWidget = Cast<UBC_HealthBarWidget>(HealthBar->GetUserWidgetObject()))
 	{
 		HealthBarWidget->SetHealthPercent(GetAttributes()->GetHealthPercent());
 	}
 
-	if (GetAttributes()->IsAlive())
+	if (Causer->IsA<ABC_PlayerCharacter>() && GetAttributes()->IsAlive())
 	{
-		SendStateTreeEvent(TEXT("AI.SeePlayer"));
+		SetShowHealthBar(true);	
+		
+		// SendStateTreeEvent(TEXT("AI.SeePlayer"));
+		TArray<AActor*> Enemies;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABC_Enemy::StaticClass(), Enemies);
+
+		for (auto Enemy : Enemies)
+		{
+			if (FVector::Dist(GetActorLocation(), Enemy->GetActorLocation()) < 1000.0f)
+			{
+				Cast<ABC_Enemy>(Enemy)->SendStateTreeEvent(TEXT("AI.SeePlayer"));
+			}
+		}
 	}
 }
 
@@ -89,7 +103,7 @@ void ABC_Enemy::HandleDeath()
 	Super::HandleDeath();
 	
 	// hide the life bar
-	HealthBar->SetVisibility(false);
+	SetShowHealthBar(false);
 
 	// Notify State Tree
 	SendStateTreeEvent(TEXT("AI.Died"));
@@ -97,20 +111,25 @@ void ABC_Enemy::HandleDeath()
 
 void ABC_Enemy::OnAIPerceptionTargetUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
-	if (APawn* PlayerPawn = Cast<APawn>(Actor); PlayerPawn->IsPlayerControlled())
+	if (ABC_Character* Player = Cast<ABC_Character>(Actor); Player->IsPlayerControlled() && Player->GetAttributes()->IsAlive())
 	{
 		TArray<AActor*> SensedActors;
 		TSubclassOf<UAISense> SenseClass;
 		AIPerception->GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), SensedActors);
 
-		if (SensedActors.Contains(PlayerPawn))
+		if (SensedActors.Contains(Player))
 		{
 			SendStateTreeEvent(TEXT("AI.SeePlayer"));
 		}
-		else if (FVector::Dist(PlayerPawn->GetActorLocation(), GetActorLocation()) > 800.0f)
+		else if (FVector::Dist(Player->GetActorLocation(), GetActorLocation()) > 800.0f)
 		{
 			// When player is not perceived and far enough
 			SendStateTreeEvent(TEXT("AI.LostPlayer"));
+			SetShowHealthBar(false);
+		}
+		else
+		{
+			SetShowHealthBar(false);
 		}
 	}
 }
@@ -134,6 +153,11 @@ AActor* ABC_Enemy::GetNextPatrolTarget()
 	// Store reference to the "popped" patrol target
 	PatrolTarget = NewPatrolTarget; 
 	return PatrolTarget;
+}
+
+void ABC_Enemy::SetShowHealthBar(bool bShowHealthBar)
+{
+	HealthBar->SetVisibility(bShowHealthBar);
 }
 
 

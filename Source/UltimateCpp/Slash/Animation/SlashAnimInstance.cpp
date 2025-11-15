@@ -44,6 +44,8 @@ void USlashAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		return;
 
 	CharacterState = SlashCharacter->GetCharacterState();
+	EquippedWeaponType = SlashCharacter->GetEquippedWeaponType();
+	CombatState = SlashCharacter->GetCombatState();
 }
 
 

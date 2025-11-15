@@ -48,9 +48,9 @@ void ABC_Character::OnWeaponHit(const FHitResult& Hit)
 {
 	GetHitStopComponent()->HitStop();
 	
-	if (AActor* HitActor = Hit.GetActor(); HitActor->Implements<UBC_DamageableInterface>())
+	if (AActor* HitActor = Hit.GetActor(); HitActor->Implements<UBC_Damageable>())
 	{
-		Execute_TakeDamage(HitActor, EquippedWeapon.Get()->GetBaseDamage(), Hit);
+		Execute_TakeDamage(HitActor, this, EquippedWeapon.Get()->GetBaseDamage(), Hit);
 	}
 }
 
@@ -75,12 +75,12 @@ void ABC_Character::EquipWeapon_Implementation(UObject* Weapon)
 void ABC_Character::UnequipWeapon_Implementation()
 {
 	EquippedWeapon->OnWeaponHit.RemoveDynamic(this, &ThisClass::OnWeaponHit);
-	// EquippedWeapon = nullptr;
+	EquippedWeapon = nullptr;
 }
 //~ End BC Attacker Interface
 
 //~ Begin BC Damageable Interface
-void ABC_Character::TakeDamage_Implementation(float Damage, const FHitResult& Hit)
+void ABC_Character::TakeDamage_Implementation(AActor* Causer, float Damage, const FHitResult& Hit)
 {
 	HitStop->HitStop();
 	Attributes->DecreaseHealthBy(Damage);

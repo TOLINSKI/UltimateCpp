@@ -3,6 +3,7 @@
 
 #include "Items/BC_Item.h"
 
+#include "NiagaraComponent.h"
 #include "Components/BC_HoverComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -20,21 +21,24 @@ ABC_Item::ABC_Item()
 	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Scene Root"));
 	SetRootComponent(Root);
 	
-	PickupSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Pickup Sphere"));
+	PickupSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere Comp"));
 	PickupSphere->SetupAttachment(RootComponent);
 	PickupSphere->bHiddenInGame = false;
 
-	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh Comp"));
 	Mesh->SetupAttachment(RootComponent);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 
-	RotatingMovement = CreateDefaultSubobject<URotatingMovementComponent>(TEXT("Rotating Movement"));
+	GlowEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Niagara Comp"));
+	GlowEffect->SetupAttachment(RootComponent);
+
+	RotatingMovement = CreateDefaultSubobject<URotatingMovementComponent>(TEXT("Rotating Comp"));
 
 	// Base Craft Components:
-	BC_ButtonWidget = CreateDefaultSubobject<UBC_InteractButtonComponent>(TEXT("Interact Button Widget"));
-	BC_ButtonWidget->SetupAttachment(Root);
+	InteractWidget = CreateDefaultSubobject<UBC_InteractButtonComponent>(TEXT("Widget Comp"));
+	InteractWidget->SetupAttachment(Root);
 	
-	BC_Hover = CreateDefaultSubobject<UBC_HoverComponent>(TEXT("Hovering Movement"));
+	HoveringMovement = CreateDefaultSubobject<UBC_HoverComponent>(TEXT("Hovering Comp"));
 
 	bCanInteract = true;
 }
@@ -56,7 +60,7 @@ void ABC_Item::OnPickupSphereBeginOverlap(UPrimitiveComponent* OverlappedCompone
 #endif
 	
 	if (bCanInteract)
-		BC_ButtonWidget->ShowButton();
+		InteractWidget->ShowButton();
 }
 
 void ABC_Item::OnPickupSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -67,7 +71,7 @@ void ABC_Item::OnPickupSphereEndOverlap(UPrimitiveComponent* OverlappedComponent
 	UE_LOG(LogSlashItem, Display, TEXT("%s Ended Overlap with: %s"), *GetName(), *OtherActor->GetName());
 #endif
 	
-	BC_ButtonWidget->HideButton();
+	InteractWidget->HideButton();
 }
 
 void ABC_Item::Interact_Implementation(AActor* InstigatorActor)

@@ -285,6 +285,9 @@ struct FStateTreeGetPlayerInfoInstanceData
 	UPROPERTY(VisibleAnywhere)
 	FVector TargetPlayerLocation = FVector::ZeroVector;
 
+	UPROPERTY(VisibleAnywhere)
+	float PlayerHealth = 100.0f;
+	
 	/** Distance to the target */
 	UPROPERTY(VisibleAnywhere)
 	float DistanceToTarget = 0.0f;

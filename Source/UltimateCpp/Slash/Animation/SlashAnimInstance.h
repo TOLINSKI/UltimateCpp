@@ -44,7 +44,13 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Owner|Movement")
 	bool bIsFalling;
-
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Owner|State")
 	ECharacterState CharacterState;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Owner|State")
+	ESlashWeaponType EquippedWeaponType;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Owner|State")
+	ESlashCombatState CombatState;
 };

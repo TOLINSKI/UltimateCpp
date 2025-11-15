@@ -10,7 +10,7 @@ void UAnimNotify_WeaponSheathed::Notify(USkeletalMeshComponent* MeshComp, UAnimS
 {
 	if (ASlashCharacter* Character = Cast<ASlashCharacter>(MeshComp->GetOwner()))
 	{
-		if (UObject* Weapon = IBC_AttackerInterface::Execute_GetWeapon(Character))
+		if (UObject* Weapon = IBC_Attacker::Execute_GetWeapon(Character))
 		{
 			IBC_WeaponInterface::Execute_Attach(Weapon, Character->GetMesh(), Character->GetBackSocketName());
 		}
