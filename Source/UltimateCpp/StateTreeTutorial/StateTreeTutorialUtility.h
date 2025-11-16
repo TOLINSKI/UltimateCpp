@@ -24,7 +24,7 @@ struct FStateTreeGetOverlapActorCountInstanceData
 	UPROPERTY(EditAnywhere, Category = Output)
 	int32 OverlapCount { 0 };
 
-	UPROPERTY(VisibleAnywhere, CAtegory = Event)
+	UPROPERTY(VisibleAnywhere, Category = Event)
 	FStateTreeDelegateDispatcher OnOverlapActorCountChanged;
 };
 

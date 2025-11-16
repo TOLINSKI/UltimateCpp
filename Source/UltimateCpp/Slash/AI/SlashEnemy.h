@@ -20,12 +20,15 @@ class ULTIMATECPP_API ASlashEnemy : public ABC_Enemy
 public:
 	ASlashEnemy();
 
-protected:
-	virtual void BeginPlay() override;
-	
 // Slash Interface:
 public:
+	//~ Begin AI Interface
+	virtual void QuickAttack() override;
+	//~ End AI Interface
+	
+	//~ Begin Damageable Interface
 	virtual void TakeDamage_Implementation(AActor* Causer, float Damage, const FHitResult& Hit) override;
+	//~ End Damageable Interface
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Slash|SFX")

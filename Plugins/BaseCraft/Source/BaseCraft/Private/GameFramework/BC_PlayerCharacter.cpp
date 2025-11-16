@@ -57,7 +57,7 @@ void ABC_PlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ThisClass::Interact);
 
 		// Attacking
-		EnhancedInputComponent->BindAction(QuickAttackAction, ETriggerEvent::Started, this, &ThisClass::QuickAttack_Implementation);
+		EnhancedInputComponent->BindAction(QuickAttackAction, ETriggerEvent::Started, this, &ThisClass::QuickAttack);
 		
 		// Rolling
 		EnhancedInputComponent->BindAction(RollAction, ETriggerEvent::Started, this, &ThisClass::Roll);
@@ -96,10 +96,8 @@ void ABC_PlayerCharacter::Interact()
 {
 	DoInteract();
 }
-void ABC_PlayerCharacter::QuickAttack_Implementation()
+void ABC_PlayerCharacter::QuickAttack()
 {
-	Super::QuickAttack_Implementation();
-	
 	DoQuickAttack();
 }
 void ABC_PlayerCharacter::Roll()

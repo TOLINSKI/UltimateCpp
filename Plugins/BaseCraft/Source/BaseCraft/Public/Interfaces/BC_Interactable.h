@@ -20,7 +20,6 @@ class BASECRAFT_API IBC_Interactable
 	GENERATED_BODY()
 
 public:
-
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "BaseCraft|Interfaces|Interaction")
 	void Interact(AActor* Interactor);
 

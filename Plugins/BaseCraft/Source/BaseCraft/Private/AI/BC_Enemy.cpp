@@ -11,9 +11,11 @@
 #include "Components/StateTreeAIComponent.h"
 #include "Perception/AISense_Sight.h"
 #include "GameplayTagsManager.h"
+#include "Components/BC_MontageComponent.h"
 #include "GameFramework/BC_PlayerCharacter.h"
 #include "kismet/GameplayStatics.h"
 #include "UI/BC_HealthBarWidget.h"
+#include "kismet/KismetMathLibrary.h"
 
 DEFINE_LOG_CATEGORY_STATIC(Log_BC_Enemy, All, All);
 
@@ -43,7 +45,14 @@ ABC_Enemy::ABC_Enemy()
 	HealthBar->SetDrawSize(FVector2D(250.0f, 25.0f));
 	HealthBar->SetVisibility(false); // Wait to show health on command
 
+	//~ State
 	LifeSpan = 3.0f;
+	EnemyState = EBC_EnemyState::EES_Idle;
+	
+	//~ Combat
+	CombatSensingRadius = 1000.0f;
+	RotateToTargetSpeed = 2.0f;	
+	RotateToTargetThreshold = 15.0f;
 }
 
 void ABC_Enemy::BeginPlay()
@@ -67,22 +76,62 @@ void ABC_Enemy::TakeDamage_Implementation(AActor* Causer, float Damage, const FH
 		HealthBarWidget->SetHealthPercent(GetAttributes()->GetHealthPercent());
 	}
 
-	if (Causer->IsA<ABC_PlayerCharacter>() && GetAttributes()->IsAlive())
+	if (GetAttributes()->IsAlive())
 	{
-		SetShowHealthBar(true);	
-		
-		// SendStateTreeEvent(TEXT("AI.SeePlayer"));
-		TArray<AActor*> Enemies;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABC_Enemy::StaticClass(), Enemies);
-
-		for (auto Enemy : Enemies)
+		if (Causer->IsA<ABC_PlayerCharacter>())
 		{
-			if (FVector::Dist(GetActorLocation(), Enemy->GetActorLocation()) < 1000.0f)
+			SetShowHealthBar(true);	
+		
+			// SendStateTreeEvent(TEXT("AI.SeePlayer"));
+			TArray<AActor*> Enemies;
+			UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABC_Enemy::StaticClass(), Enemies);
+		
+			for (auto EnemyActor : Enemies)
 			{
-				Cast<ABC_Enemy>(Enemy)->SendStateTreeEvent(TEXT("AI.SeePlayer"));
+				if (FVector::Dist(GetActorLocation(), EnemyActor->GetActorLocation()) <= CombatSensingRadius)
+				{
+					Cast<ABC_Enemy>(EnemyActor)->SetCombatTarget(Causer);
+				}
 			}
 		}
+		else
+		{
+			SetCombatTarget(Causer);
+		}
 	}
+}
+
+bool ABC_Enemy::RotateToTarget(AActor* Target, float DeltaTime)
+{
+	if (Target == nullptr && !GetCombatTarget())
+		return true;
+	
+	if (Target == nullptr)
+		Target = GetCombatTarget();
+	
+	FVector EnemyLocation = GetActorLocation();
+	FVector CombatTargetLocation = Target->GetActorLocation();
+	FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(EnemyLocation, CombatTargetLocation);
+	
+	FRotator NewRotation = FMath::RInterpTo(
+		GetActorRotation(), 
+		LookAtRotation,
+		DeltaTime,
+		RotateToTargetSpeed);
+	
+	SetActorRotation(NewRotation);
+	
+	return NewRotation.Equals(LookAtRotation, RotateToTargetThreshold);
+}
+
+bool ABC_Enemy::IsAttacking()
+{
+	return GetMontageManager()->IsPlayingMontage(EBC_MontageType::EMT_QuickAttack);
+}
+
+void ABC_Enemy::QuickAttack()
+{
+	UE_LOG(Log_BC_Enemy, Display, TEXT("Enemy: %s is attacking."), *GetName());
 }
 
 void ABC_Enemy::SendStateTreeEvent(const FName& GameplayTagName)
@@ -109,6 +158,27 @@ void ABC_Enemy::HandleDeath()
 	SendStateTreeEvent(TEXT("AI.Died"));
 }
 
+void ABC_Enemy::LooseCombatTarget()
+{
+	// When player is not perceived and far enough
+	CombatTarget = nullptr;
+	SendStateTreeEvent(TEXT("AI.CombatTargetLost"));
+	SetShowHealthBar(false);
+	EnemyState = EBC_EnemyState::EES_Patrol;
+}
+
+void ABC_Enemy::AcquireCombatTarget(AActor* NewCombatTarget)
+{
+	CombatTarget = NewCombatTarget;
+	SendStateTreeEvent(TEXT("AI.CombatTargetAcquired"));
+	EnemyState = EBC_EnemyState::EES_Combat;
+}
+
+void ABC_Enemy::SetCombatTarget(AActor* NewCombatTarget)
+{
+	AcquireCombatTarget(NewCombatTarget);
+}
+
 void ABC_Enemy::OnAIPerceptionTargetUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
 	if (ABC_Character* Player = Cast<ABC_Character>(Actor); Player->IsPlayerControlled() && Player->GetAttributes()->IsAlive())
@@ -119,17 +189,11 @@ void ABC_Enemy::OnAIPerceptionTargetUpdated(AActor* Actor, FAIStimulus Stimulus)
 
 		if (SensedActors.Contains(Player))
 		{
-			SendStateTreeEvent(TEXT("AI.SeePlayer"));
+			AcquireCombatTarget(Player);
 		}
-		else if (FVector::Dist(Player->GetActorLocation(), GetActorLocation()) > 800.0f)
+		else if (FVector::Dist(Player->GetActorLocation(), GetActorLocation()) > CombatSensingRadius)
 		{
-			// When player is not perceived and far enough
-			SendStateTreeEvent(TEXT("AI.LostPlayer"));
-			SetShowHealthBar(false);
-		}
-		else
-		{
-			SetShowHealthBar(false);
+			LooseCombatTarget();
 		}
 	}
 }
@@ -137,7 +201,7 @@ void ABC_Enemy::OnAIPerceptionTargetUpdated(AActor* Actor, FAIStimulus Stimulus)
 AActor* ABC_Enemy::GetNextPatrolTarget()
 {
 	int32 NumTargets = PatrolTargets.Num();
-
+	
 	// Return if no patrol targets
 	if (NumTargets == 0)
 		return nullptr;
@@ -153,6 +217,11 @@ AActor* ABC_Enemy::GetNextPatrolTarget()
 	// Store reference to the "popped" patrol target
 	PatrolTarget = NewPatrolTarget; 
 	return PatrolTarget;
+}
+
+bool ABC_Enemy::IsTakingDamage()
+{
+	return GetMontageManager()->IsPlayingMontage(EBC_MontageType::EMT_HitReact);
 }
 
 void ABC_Enemy::SetShowHealthBar(bool bShowHealthBar)

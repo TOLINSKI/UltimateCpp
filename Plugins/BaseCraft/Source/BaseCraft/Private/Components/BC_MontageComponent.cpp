@@ -165,5 +165,32 @@ void UBC_MontageComponent::SetMontage(EBC_MontageType MontageType, TSoftObjectPt
 	}
 }
 
+bool UBC_MontageComponent::IsPlayingMontage(EBC_MontageType MontageType)
+{
+	UAnimInstance* AnimInstance {nullptr};
+	
+	if (ACharacter* Character = Cast<ACharacter>(GetOwner()))
+	{
+		AnimInstance = Character->GetMesh()->GetAnimInstance();
+	}
+	
+	if (!ensureMsgf(AnimInstance, TEXT("Anim Instance not found!")))
+		return false;
+	
+	switch (MontageType)
+	{
+	case EMT_QuickAttack:
+		return AnimInstance->Montage_IsPlaying(QuickAttack);
+	case EMT_HitReact:
+		return AnimInstance->Montage_IsPlaying(HitReact);
+	case EMT_EquipWeapon:
+		return AnimInstance->Montage_IsPlaying(EquipWeapon);
+	case EMT_Roll:
+		return AnimInstance->Montage_IsPlaying(Roll);
+	default:
+		return false;
+	}
+}
+
 
 

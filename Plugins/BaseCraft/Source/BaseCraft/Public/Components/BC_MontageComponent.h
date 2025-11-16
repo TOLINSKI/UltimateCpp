@@ -67,4 +67,7 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "BaseCraft|Montages")
 	void SetMontage(EBC_MontageType MontageType, TSoftObjectPtr<UAnimMontage> NewMontage);
+	
+	UFUNCTION(BlueprintCallable, Category="BaseCraft|Montages")
+	bool IsPlayingMontage(EBC_MontageType MontageType);
 };

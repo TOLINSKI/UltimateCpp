@@ -59,10 +59,6 @@ UObject* ABC_Character::GetWeapon_Implementation()
 {
 	return EquippedWeapon.Get();
 }
-void ABC_Character::QuickAttack_Implementation()
-{
-	UE_LOG(Log_BC_Character, Display, TEXT("Character: %s made a quick attack!"), *GetName());
-}
 void ABC_Character::EquipWeapon_Implementation(UObject* Weapon)
 {
 	// If weapon is not valid or doesn't implement BC Weapon Interface, return
@@ -93,6 +89,22 @@ void ABC_Character::TakeDamage_Implementation(AActor* Causer, float Damage, cons
 
 	UE_LOG(Log_BC_Character, Display, TEXT("Character: %s took %f damage. Health remaining: %f."), *GetName(), Damage, Attributes->GetHealth());
 }
+
+float ABC_Character::GetHealth() const
+{
+	return GetAttributes()->GetHealth();
+}
+
+bool ABC_Character::IsAlive() const
+{
+	return GetAttributes()->IsAlive();
+}
+
+float ABC_Character::GetHealthPercent() const
+{
+	return GetAttributes()->GetHealthPercent();
+}
+
 //~ End BC Damageable Interface
 
 

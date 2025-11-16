@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Interfaces/BC_Attacker.h"
 #include "Interfaces/BC_Damageable.h"
+#include "Interfaces/BC_Attributes.h"
 #include "BC_Character.generated.h"
 
 class UBC_MontageComponent;
@@ -14,7 +15,7 @@ class UBC_HitStopComponent;
 class ABC_Weapon;
 
 UCLASS(Abstract)
-class BASECRAFT_API ABC_Character : public ACharacter, public IBC_Attacker, public IBC_Damageable
+class BASECRAFT_API ABC_Character : public ACharacter, public IBC_Attacker, public IBC_Damageable, public IBC_Attributes
 {
 	GENERATED_BODY()
 
@@ -50,7 +51,6 @@ protected:
 public:
 	//~ Begin BC Attacker Interface
 	virtual UObject* GetWeapon_Implementation() override;
-	virtual void QuickAttack_Implementation() override;
 	virtual void EquipWeapon_Implementation(UObject* Weapon) override;
 	virtual void UnequipWeapon_Implementation() override;
 	//~ End BC Attacker Interface
@@ -58,7 +58,13 @@ public:
 	//~ Begin BC Damageable Interface
 	virtual void TakeDamage_Implementation(AActor* Causer, float Damage, const FHitResult& Hit) override;
 	//~ Begin BC Damageable Interface
-
+	
+	//~Begin Attributes Interface
+	virtual float GetHealth() const override;
+	virtual bool IsAlive() const override;
+	virtual float GetHealthPercent() const override;
+	//~End Attributes Interface
+	
 	FORCEINLINE UBC_MontageComponent* GetMontageManager() const { return MontageManager; }
 	FORCEINLINE UBC_AttributeComponent* GetAttributes() const { return Attributes; }
 	FORCEINLINE UBC_HitStopComponent* GetHitStopComponent() const { return HitStop; }

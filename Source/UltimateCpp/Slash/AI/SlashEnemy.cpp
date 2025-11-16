@@ -8,6 +8,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Interfaces/BC_WeaponInterface.h"
 #include "Combat/BC_Weapon.h"
+#include "Components/BC_MontageComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogSlashEnemy, All, All);
 
@@ -16,9 +17,12 @@ ASlashEnemy::ASlashEnemy()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void ASlashEnemy::BeginPlay()
+void ASlashEnemy::QuickAttack()
 {
-	Super::BeginPlay();
+	if (IsTakingDamage() || IsAttacking())
+		return;
+	
+	GetMontageManager()->PlayMontage(EBC_MontageType::EMT_QuickAttack);
 }
 
 void ASlashEnemy::TakeDamage_Implementation(AActor* Causer, float Damage, const FHitResult& Hit)
@@ -35,6 +39,9 @@ void ASlashEnemy::TakeDamage_Implementation(AActor* Causer, float Damage, const 
 	{
 		IBC_WeaponInterface::Execute_EndAttackTracing(Weapon);
 	}
+	
+	FName SectionName = GetMontageManager()->GetHitReactMontageSectionName(Causer->GetActorLocation());
+	GetMontageManager()->PlayMontage(EBC_MontageType::EMT_HitReact, SectionName);
 }
 
 // void ASlashEnemy::HandleDeath()

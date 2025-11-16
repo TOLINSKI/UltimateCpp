@@ -39,7 +39,7 @@ private:
 	virtual void Jump() override;
 	virtual void StopJumping() override;
 	virtual void Interact();
-	virtual void QuickAttack_Implementation() override;
+	virtual void QuickAttack();
 	virtual void Roll();
 	//~ End Input
 
