@@ -70,7 +70,7 @@ protected:
 	float LifeSpan;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="BaseCraft|AI|State", meta = (AllowPrivateAccess="true"))
-	EBC_EnemyState EnemyState;
+	EBC_AIState EnemyState;
 	//~ End State
 	
 	//~ Begin Combat

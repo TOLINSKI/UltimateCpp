@@ -88,3 +88,10 @@ bool ABC_Item::CanInteract_Implementation()
 	return bCanInteract;
 }
 
+void ABC_Item::SetPickupEnabled(bool bPickupEnabled)
+{
+	PickupSphere->SetGenerateOverlapEvents(bPickupEnabled);
+	HoveringMovement->SetActive(bPickupEnabled);
+	RotatingMovement->SetActive(bPickupEnabled);
+}
+

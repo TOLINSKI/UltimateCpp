@@ -5,8 +5,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Camera/CameraComponent.h"
-#include "Components/BC_MontageComponent.h"
-#include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Interfaces/BC_Interactable.h"
 
@@ -20,10 +19,11 @@ ABC_PlayerCharacter::ABC_PlayerCharacter()
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->bUsePawnControlRotation = true;
 
-	bUseControllerRotationYaw = false;
-
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera Comp"));
 	Camera->SetupAttachment(CameraBoom);
+	
+	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;	
 }
 void ABC_PlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -105,31 +105,7 @@ void ABC_PlayerCharacter::Roll()
 	DoRoll();
 }
 
-AActor* ABC_PlayerCharacter::GetNearestInteractable()
-{
-	AActor* NearestInteractable { nullptr };
-	float NearestDistance { INFINITY };
-	TSet<AActor*> OverlappingActors;
-	GetCapsuleComponent()->GetOverlappingActors(OverlappingActors);
-	
-	for (AActor* Actor : OverlappingActors)
-	{
-		if (!Actor->Implements<UBC_Interactable>())
-			continue;
-		
-		float Distance = FVector::Dist(GetActorLocation(), Actor->GetActorLocation());
-		if (Distance < NearestDistance)
-		{
-			NearestDistance = Distance;
-			NearestInteractable = Actor;
-		}
-	}
-	
-	return NearestInteractable;
-}
-
 //~ End Input
-
 void ABC_PlayerCharacter::DoMove(const float Right, const float Forward)
 {
 	if (GetController() != nullptr)
@@ -166,18 +142,18 @@ void ABC_PlayerCharacter::DoStopJumping()
 {
 	Super::StopJumping();
 }
-void ABC_PlayerCharacter::DoInteract()
+void ABC_PlayerCharacter::DoInteract_Implementation()
 {
 	if (AActor* Interactable = GetNearestInteractable())
 	{
 		IBC_Interactable::Execute_Interact(Interactable, this);
 	}
 }
-void ABC_PlayerCharacter::DoQuickAttack()
+void ABC_PlayerCharacter::DoQuickAttack_Implementation()
 {
-	GetMontageManager()->PlayMontage(EBC_MontageType::EMT_QuickAttack);
+	UE_LOG(Log_BC_PlayerCharacter, Display, TEXT("Character: %s Quick Attack!"), *GetName());
 }
-void ABC_PlayerCharacter::DoRoll()
+void ABC_PlayerCharacter::DoRoll_Implementation()
 {
-	
+	UE_LOG(Log_BC_PlayerCharacter, Display, TEXT("Character: %s Rolls!"), *GetName());
 }

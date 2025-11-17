@@ -4,6 +4,7 @@
 #include "Combat/BC_Weapon.h"
 #include "GameFramework/Pawn.h"
 #include "DrawDebugHelpers.h"
+#include "Components/MontageComponent/BC_WeaponMontageComponent.h"
 #include "Interfaces/BC_Damageable.h"
 
 
@@ -19,6 +20,9 @@ ABC_Weapon::ABC_Weapon()
 	Mesh->SetupAttachment(Root);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
+	MontageManager = CreateDefaultSubobject<UBC_WeaponMontageComponent>(TEXT("Montage Comp"));
+	
+	WeaponType = EBC_WeaponType::EWT_None;
 	BaseDamage = 25.0f;
 	AttackTraceChannel = ECC_Visibility;
 	bAttackTraceIgnoreOwner = true;
@@ -55,7 +59,6 @@ void ABC_Weapon::MakeActorsToIgnore(TArray<AActor*>& OutActorsToIgnore)
 		}
 	}
 }
-
 void ABC_Weapon::TickAttackLogic()
 {
 	TArray<AActor*> ActorsToIgnore; 
@@ -80,7 +83,6 @@ void ABC_Weapon::TickAttackLogic()
 		OnWeaponHit.Broadcast(Hit);
 	}
 }
-
 ABC_Weapon* ABC_Weapon::CreateWeapon(APawn* OwnerPawn, TSubclassOf<ABC_Weapon> WeaponClass)
 {
 	if (!ensureMsgf(OwnerPawn != nullptr, TEXT("Owner pawn is null.")))

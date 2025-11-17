@@ -2,7 +2,7 @@
 
 
 #include "BreakableWithItem.h"
-#include "Items/SlashItem.h"
+#include "Items/BC_Item.h"
 
 // Sets default values
 ABreakableWithItem::ABreakableWithItem()
@@ -17,8 +17,8 @@ void ABreakableWithItem::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Item = GetWorld()->SpawnActor<ASlashItem>(ItemClass, ItemPosition->GetComponentLocation(), FRotator::ZeroRotator);
-	Item->DisablePickup();
+	Item = GetWorld()->SpawnActor<ABC_Item>(ItemClass, ItemPosition->GetComponentLocation(), FRotator::ZeroRotator);
+	Item->SetPickupEnabled(false);
 }
 
 void ABreakableWithItem::OnBreak(const FChaosBreakEvent& BreakEvent)
@@ -27,7 +27,7 @@ void ABreakableWithItem::OnBreak(const FChaosBreakEvent& BreakEvent)
 
 	if (Item.Get())
 	{
-		Item->EnablePickup();
+		Item->SetPickupEnabled(true);
 		Item = nullptr;
 	}
 }

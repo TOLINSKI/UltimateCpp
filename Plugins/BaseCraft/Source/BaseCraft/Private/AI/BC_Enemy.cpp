@@ -11,7 +11,8 @@
 #include "Components/StateTreeAIComponent.h"
 #include "Perception/AISense_Sight.h"
 #include "GameplayTagsManager.h"
-#include "Components/BC_MontageComponent.h"
+#include "Combat/BC_Weapon.h"
+#include "Components/MontageComponent/BC_MontageComponent.h"
 #include "GameFramework/BC_PlayerCharacter.h"
 #include "kismet/GameplayStatics.h"
 #include "UI/BC_HealthBarWidget.h"
@@ -47,7 +48,7 @@ ABC_Enemy::ABC_Enemy()
 
 	//~ State
 	LifeSpan = 3.0f;
-	EnemyState = EBC_EnemyState::EES_Idle;
+	EnemyState = EBC_AIState::EES_Idle;
 	
 	//~ Combat
 	CombatSensingRadius = 1000.0f;
@@ -126,7 +127,15 @@ bool ABC_Enemy::RotateToTarget(AActor* Target, float DeltaTime)
 
 bool ABC_Enemy::IsAttacking()
 {
-	return GetMontageManager()->IsPlayingMontage(EBC_MontageType::EMT_QuickAttack);
+	if (ABC_Weapon* Weapon = EquippedWeapon.Get())
+	{
+		if (UBC_MontageComponent* WeaponMontages = Weapon->GetComponentByClass<UBC_MontageComponent>())
+		{
+			return WeaponMontages->IsPlayingMontage(EBC_MontageType::EMT_QuickAttack);
+		}
+	}
+	
+	return  false;
 }
 
 void ABC_Enemy::QuickAttack()
@@ -164,14 +173,14 @@ void ABC_Enemy::LooseCombatTarget()
 	CombatTarget = nullptr;
 	SendStateTreeEvent(TEXT("AI.CombatTargetLost"));
 	SetShowHealthBar(false);
-	EnemyState = EBC_EnemyState::EES_Patrol;
+	EnemyState = EBC_AIState::EES_Patrol;
 }
 
 void ABC_Enemy::AcquireCombatTarget(AActor* NewCombatTarget)
 {
 	CombatTarget = NewCombatTarget;
 	SendStateTreeEvent(TEXT("AI.CombatTargetAcquired"));
-	EnemyState = EBC_EnemyState::EES_Combat;
+	EnemyState = EBC_AIState::EES_Combat;
 }
 
 void ABC_Enemy::SetCombatTarget(AActor* NewCombatTarget)

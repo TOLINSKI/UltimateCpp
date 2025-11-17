@@ -4,9 +4,10 @@
 #include "SlashCharacter.h"
 #include "Animation/AnimMontage.h"
 #include "Combat/SlashWeapon.h"
-#include "Components/BC_MontageComponent.h"
+#include "Components/MontageComponent/BC_MontageComponent.h"
 #include "Interfaces/BC_Interactable.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Utility/BC_Types.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogSlashCharacter, All, All);
 
@@ -68,6 +69,8 @@ void ASlashCharacter::EquipWeapon_Implementation(UObject* NewWeapon)
 	if (!ensureMsgf(Weapon, TEXT("EquipWeapon called but no valid weapon found.")))
 		return;
 
+	IBC_WeaponInterface::Execute_Attach(Weapon, GetMesh(), HandSocketName);
+	
 	CharacterState = ECharacterState::ECS_Equipped;
 	ActionState = EActionState::EAS_Equipping;
 		
@@ -80,8 +83,7 @@ void ASlashCharacter::EquipWeapon_Implementation(UObject* NewWeapon)
 			CombatState = ESlashCombatState::ESC_Normal;
 		});
 
-	GetMontageManager()->PlayMontageWithEndDelegate(EndDelegate, EBC_MontageType::EMT_EquipWeapon, TEXT("Equip"));
-	IBC_WeaponInterface::Execute_Attach(Weapon, GetMesh(), HandSocketName);
+	GetWeaponMontageManager()->PlayMontageWithEndDelegate(EndDelegate, EBC_MontageType::EMT_EquipWeapon, TEXT("Equip"));
 }
 void ASlashCharacter::UnequipWeapon_Implementation()
 {
@@ -97,7 +99,7 @@ void ASlashCharacter::UnequipWeapon_Implementation()
 		});
 
 	// Play Montage
-	GetMontageManager()->PlayMontageWithEndDelegate(EndDelegate, EBC_MontageType::EMT_EquipWeapon, TEXT("Unequip"));
+	GetWeaponMontageManager()->PlayMontageWithEndDelegate(EndDelegate, EBC_MontageType::EMT_EquipWeapon, TEXT("Unequip"));
 	ActionState = EActionState::EAS_Equipping;
 	CharacterState = ECharacterState::ECS_Unequipped;
 }
@@ -147,7 +149,7 @@ void ASlashCharacter::DoMove(const float RightVal, const float ForwardVal)
 	
 	Super::DoMove(RightVal, ForwardVal);
 }
-void ASlashCharacter::DoInteract()
+void ASlashCharacter::DoInteract_Implementation()
 {
 	if (IsOccupied())
 		return;
@@ -167,15 +169,14 @@ void ASlashCharacter::DoInteract()
 		Execute_EquipWeapon(this, LastUsedWeapon);
 	}
 }
-void ASlashCharacter::DoQuickAttack()
+void ASlashCharacter::DoQuickAttack_Implementation()
 {
 	if (!CanAttack())
 		return;
 
 	QuickAttackCombo();
 }
-
-void ASlashCharacter::DoRoll()
+void ASlashCharacter::DoRoll_Implementation()
 {
 	if (!CanAttack())
 		return;
@@ -234,20 +235,18 @@ void ASlashCharacter::PlayQuickAttackMontage()
 
 	FName SectionName = FName(FString::Printf(TEXT("Attack%d"), ComboCount));
 
-	if (UBC_MontageComponent* MontageComp = GetCorrectMontageComp())
+	if (UBC_MontageComponent* WeaponMontages = GetWeaponMontageManager())
 	{
-		MontageComp->PlayMontageWithEndDelegate(EndDelegate, EBC_MontageType::EMT_QuickAttack, SectionName);
+		WeaponMontages->PlayMontageWithEndDelegate(EndDelegate, EBC_MontageType::EMT_QuickAttack, SectionName);
 	}
 }
 UBC_MontageComponent* ASlashCharacter::GetCorrectMontageComp()
 {
 	if (ASlashWeapon* SlashWeapon = GetSlashWeapon())
 	{
-		ESlashWeaponType WeaponType = SlashWeapon->GetWeaponType();
-
-		switch (WeaponType)
+		switch (EBC_WeaponType WeaponType = static_cast<EBC_WeaponType>(IBC_WeaponInterface::Execute_GetWeaponType(SlashWeapon)))
 		{
-		case ESlashWeaponType::EWT_ShortSword:
+		case EBC_WeaponType::EWT_ShortSword:
 			return ShortSwordMontages;
 		default:
 			return GetMontageManager();
@@ -272,7 +271,7 @@ ASlashWeapon* ASlashCharacter::GetSlashWeapon()
 	return Cast<ASlashWeapon>(Execute_GetWeapon(this));
 }
 
-ESlashWeaponType ASlashCharacter::GetEquippedWeaponType()
+EBC_WeaponType ASlashCharacter::GetEquippedWeaponType()
 {
-	return GetSlashWeapon() ? GetSlashWeapon()->GetWeaponType() : ESlashWeaponType::EWT_None;
+	return GetSlashWeapon() ? static_cast<EBC_WeaponType>(IBC_WeaponInterface::Execute_GetWeaponType(GetSlashWeapon())) : EBC_WeaponType::EWT_None;
 }

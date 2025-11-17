@@ -8,7 +8,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Interfaces/BC_WeaponInterface.h"
 #include "Combat/BC_Weapon.h"
-#include "Components/BC_MontageComponent.h"
+#include "Components/MontageComponent/BC_MontageComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogSlashEnemy, All, All);
 
@@ -22,7 +22,7 @@ void ASlashEnemy::QuickAttack()
 	if (IsTakingDamage() || IsAttacking())
 		return;
 	
-	GetMontageManager()->PlayMontage(EBC_MontageType::EMT_QuickAttack);
+	GetWeaponMontageManager()->PlayMontage(EBC_MontageType::EMT_QuickAttack);
 }
 
 void ASlashEnemy::TakeDamage_Implementation(AActor* Causer, float Damage, const FHitResult& Hit)
@@ -43,14 +43,6 @@ void ASlashEnemy::TakeDamage_Implementation(AActor* Causer, float Damage, const 
 	FName SectionName = GetMontageManager()->GetHitReactMontageSectionName(Causer->GetActorLocation());
 	GetMontageManager()->PlayMontage(EBC_MontageType::EMT_HitReact, SectionName);
 }
-
-// void ASlashEnemy::HandleDeath()
-// {
-// 	Super::HandleDeath();
-// 	const FVector Direction = ((GetActorLocation() - UGameplayStatics::GetPlayerPawn(this, 0)->GetActorLocation())*FVector(1.0f, 1.0f, 0.0f)).GetSafeNormal();
-// 	GetMesh()->AddImpulse(Direction * DeathImpulse, TEXT("Spine2"));
-// 	SetLifeSpan(LifeSpan);
-// }
 
 
 

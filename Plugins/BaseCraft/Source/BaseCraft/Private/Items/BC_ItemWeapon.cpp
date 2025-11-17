@@ -1,23 +1,22 @@
 ﻿// Copyright Benski Game Works 2025, All rights reserved.
 
 
-#include "SlashItem_Weapon.h"
-#include "Components/BC_InteractButtonComponent.h"
+#include "Items/BC_ItemWeapon.h"
 #include "kismet/GameplayStatics.h"
-#include "Combat/SlashWeapon.h"
 #include "Combat/Melee/BC_CapsuleWeapon.h"
 #include "Interfaces/BC_Attacker.h"
+#include "Components/BC_InteractButtonComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogSlashItemWeapon, All, All);
 
-ASlashItem_Weapon::ASlashItem_Weapon()
+ABC_ItemWeapon::ABC_ItemWeapon()
 {
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void ASlashItem_Weapon::Equip(APawn* WeaponOwner)
+void ABC_ItemWeapon::Equip(APawn* WeaponOwner)
 {
-	ASlashWeapon* NewWeapon = Cast<ASlashWeapon>(ABC_Weapon::CreateWeapon(WeaponOwner, WeaponClass));
+	ABC_Weapon* NewWeapon = Cast<ABC_Weapon>(ABC_Weapon::CreateWeapon(WeaponOwner, WeaponClass));
 	check(NewWeapon != nullptr);
 
 	IBC_Attacker::Execute_EquipWeapon(WeaponOwner, NewWeapon);
@@ -26,7 +25,7 @@ void ASlashItem_Weapon::Equip(APawn* WeaponOwner)
 		UGameplayStatics::PlaySoundAtLocation(this, InteractionSound, GetActorLocation());
 }
 
-void ASlashItem_Weapon::Interact_Implementation(AActor* InstigatorActor)
+void ABC_ItemWeapon::Interact_Implementation(AActor* InstigatorActor)
 {
 	if (Mesh->GetStaticMesh() == nullptr)
 		return;

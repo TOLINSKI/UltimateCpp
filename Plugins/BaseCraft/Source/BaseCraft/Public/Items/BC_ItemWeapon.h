@@ -3,19 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Items/SlashItem.h"
-#include "SlashItem_Weapon.generated.h"
+#include "Items/BC_Item.h"
+#include "BC_ItemWeapon.generated.h"
 
-class ASlashCharacter;
-class ASlashWeapon;
+class ABC_Weapon;
 
 UCLASS()
-class ULTIMATECPP_API ASlashItem_Weapon : public ASlashItem
+class BASECRAFT_API ABC_ItemWeapon : public ABC_Item
 {
 	GENERATED_BODY()
 
 public:
-	ASlashItem_Weapon();
+	ABC_ItemWeapon();
 	
 // Slash Weapon Interface
 public:
@@ -27,5 +26,5 @@ protected:
 
 	/** The actual weapon class to spawn when collected. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Slash|Weapon")
-	TSubclassOf<ASlashWeapon> WeaponClass;
+	TSubclassOf<ABC_Weapon> WeaponClass;
 };

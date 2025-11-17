@@ -43,7 +43,8 @@ public class BaseCraft : ModuleRules
 				"StateTreeModule",
 				"GameplayStateTreeModule",
 				"AIModule",
-				"GameplayTags"
+				"GameplayTags", 
+				"AnimGraphRuntime"
 			}
 			);
 		

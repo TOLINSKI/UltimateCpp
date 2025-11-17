@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Items/SlashItem.h"
+#include "Items/BC_Item.h"
 #include "SlashTreasure.generated.h"
 
 UCLASS()
-class ULTIMATECPP_API ASlashTreasure : public ASlashItem
+class ULTIMATECPP_API ASlashTreasure : public ABC_Item
 {
 	GENERATED_BODY()
 

@@ -9,10 +9,11 @@
 #include "Interfaces/BC_Attributes.h"
 #include "BC_Character.generated.h"
 
-class UBC_MontageComponent;
+class UBC_CharacterMontageComponent;
 class UBC_AttributeComponent;
 class UBC_HitStopComponent;
 class ABC_Weapon;
+class UBC_MontageComponent;
 
 UCLASS(Abstract)
 class BASECRAFT_API ABC_Character : public ACharacter, public IBC_Attacker, public IBC_Damageable, public IBC_Attributes
@@ -27,7 +28,7 @@ protected:
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="BaseCraft|Components", meta = (AllowPrivateAccess="true"))
-	TObjectPtr<UBC_MontageComponent> MontageManager;
+	TObjectPtr<UBC_CharacterMontageComponent> MontageManager;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="BaseCraft|Components", meta = (AllowPrivateAccess="true"))
 	TObjectPtr<UBC_AttributeComponent> Attributes; 
@@ -42,11 +43,13 @@ protected:
 	UFUNCTION()
 	virtual void OnWeaponHit(const FHitResult& Hit);
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="BaseCraft|Combat", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Combat", meta = (AllowPrivateAccess = "true"))
 	float DeathImpulse;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="BaseCraft|Combat", meta = (AllowPrivateAccess="true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="BaseCraft|Combat", meta = (AllowPrivateAccess="true"))
 	TWeakObjectPtr<ABC_Weapon> EquippedWeapon;
+	
+	AActor* GetNearestInteractable() const;	
 	
 public:
 	//~ Begin BC Attacker Interface
@@ -65,7 +68,19 @@ public:
 	virtual float GetHealthPercent() const override;
 	//~End Attributes Interface
 	
-	FORCEINLINE UBC_MontageComponent* GetMontageManager() const { return MontageManager; }
+	UFUNCTION(BlueprintCallable, Category = "BaseCraft|Combat")
+	UBC_MontageComponent* GetWeaponMontageManager() const;
+	
+	UFUNCTION(BlueprintCallable, Category = "BaseCraft|Combat")
+	virtual void PlayQuickAttackMontage();
+	
+	UFUNCTION(BlueprintCallable, Category = "BaseCraft|Combat")
+	virtual void PlayEquipMontage();
+	
+	UFUNCTION(BlueprintCallable, Category = "BaseCraft|Combat")
+	virtual void PlayUnequipMontage();
+	
+	FORCEINLINE UBC_MontageComponent* GetMontageManager() const;
 	FORCEINLINE UBC_AttributeComponent* GetAttributes() const { return Attributes; }
 	FORCEINLINE UBC_HitStopComponent* GetHitStopComponent() const { return HitStop; }
 };

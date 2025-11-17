@@ -21,9 +21,6 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Slash|Weapon")
-	ESlashWeaponType WeaponType;
-
 // Slash Interface
 // ====================
 public:
@@ -32,7 +29,4 @@ public:
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Slash|Weapon|FX")
 	TObjectPtr<UNiagaraComponent> WeaponTrailSystem;
-
-public:
-	ESlashWeaponType GetWeaponType() const { return WeaponType; }
 };

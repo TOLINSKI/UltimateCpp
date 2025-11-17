@@ -78,16 +78,21 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Slash|Input")
 	virtual void DoStopJumping();
 
-	UFUNCTION(BlueprintCallable, Category = "Slash|Input")
-	virtual void DoInteract();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Slash|Input")
+	void DoInteract();
 
-	UFUNCTION(BlueprintCallable, Category = "Slash|Input")
-	virtual void DoQuickAttack();
+	virtual void DoInteract_Implementation();
 	
-	UFUNCTION(BlueprintCallable, Category = "Slash|Input")
-	virtual void DoRoll();	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Slash|Input")
+	void DoQuickAttack();
 	
-	AActor* GetNearestInteractable();	
+	virtual void DoQuickAttack_Implementation();
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Slash|Input")
+	void DoRoll();	
+	
+	virtual void DoRoll_Implementation();
+	
 		
 public:
 	FORCEINLINE UCameraComponent* GetCamera() const { return Camera;}

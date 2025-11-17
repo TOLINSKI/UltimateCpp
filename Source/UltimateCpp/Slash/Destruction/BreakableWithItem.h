@@ -6,7 +6,7 @@
 #include "SlashBreakableActor.h"
 #include "BreakableWithItem.generated.h"
 
-class ASlashItem;
+class ABC_Item;
 
 UCLASS(Abstract)
 class ULTIMATECPP_API ABreakableWithItem : public ASlashBreakableActor
@@ -23,11 +23,11 @@ protected:
 public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Breakable|Item")
-	TSubclassOf<ASlashItem> ItemClass;
+	TSubclassOf<ABC_Item> ItemClass;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Breakable|Item")
 	TObjectPtr<USceneComponent> ItemPosition;
 
 	UPROPERTY()
-	TWeakObjectPtr<ASlashItem> Item;
+	TWeakObjectPtr<ABC_Item> Item;
 };

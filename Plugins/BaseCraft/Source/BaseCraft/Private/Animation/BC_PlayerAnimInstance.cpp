@@ -1,29 +1,25 @@
 ﻿// Copyright Benski Game Works 2025, All rights reserved.
 
 
-#include "SlashAnimInstance.h"
+#include "Animation/BC_PlayerAnimInstance.h"
+#include "kismet/KismetMathLibrary.h"
+#include "KismetAnimationLibrary.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "KismetAnimationLibrary.h"
-#include "Kismet/KismetMathLibrary.h"
-#include "Slash/SlashCharacter.h"
+#include "Interfaces/BC_Attacker.h"
+#include "Interfaces/BC_WeaponInterface.h"
 
-DEFINE_LOG_CATEGORY_STATIC(LogSlashAnimInstance, All, All);
-
-void USlashAnimInstance::NativeInitializeAnimation()
+void UBC_PlayerAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
-
-	Character = Cast<ACharacter>(TryGetPawnOwner());
-	if (!Character)
-		return;
-
-	MovementComponent = Character->GetCharacterMovement();
-
-	SlashCharacter = Cast<ASlashCharacter>(Character);
+	
+	if (Character = Cast<ACharacter>(TryGetPawnOwner()); Character != nullptr)
+	{
+		MovementComponent = Character->GetCharacterMovement();
+	}
 }
 
-void USlashAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
+void UBC_PlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
 
@@ -40,13 +36,11 @@ void USlashAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	bHasGroundVelocity = GroundSpeed > 0.01f && !MovementComponent->GetCurrentAcceleration().IsNearlyZero();
 	bIsFalling = MovementComponent->IsFalling();
 
-	if (!SlashCharacter)
-		return;
-
-	CharacterState = SlashCharacter->GetCharacterState();
-	// EquippedWeaponType = SlashCharacter->GetEquippedWeaponType();
-	CombatState = SlashCharacter->GetCombatState();
+	if (Character->Implements<UBC_Attacker>())
+	{
+		if (const UObject* Weapon = IBC_Attacker::Execute_GetWeapon(Character); Weapon && Weapon->Implements<UBC_WeaponInterface>())
+		{
+			EquippedWeaponType = static_cast<EBC_WeaponType>(IBC_WeaponInterface::Execute_GetWeaponType(Weapon));
+		}
+	}
 }
-
-
-

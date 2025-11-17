@@ -70,16 +70,16 @@ private:
 	
 	void QuickAttackCombo();
 
-	void PlayQuickAttackMontage();
+	virtual void PlayQuickAttackMontage() override;
 
 	UBC_MontageComponent* GetCorrectMontageComp();
 	
 protected:
 	//~ Begin input
 	virtual void DoMove(const float RightVal, const float ForwardVal) override;
-	virtual void DoInteract() override;
-	virtual void DoQuickAttack() override;
-	virtual void DoRoll() override;
+	virtual void DoInteract_Implementation() override;
+	virtual void DoQuickAttack_Implementation() override;
+	virtual void DoRoll_Implementation() override;
 	//~ End input
 
 	//~ Begin Weapons
@@ -122,7 +122,7 @@ public:
 	FORCEINLINE ECharacterState GetCharacterState() const { return CharacterState; }
 
 	UFUNCTION(BlueprintPure, Category = "Slash|Weapon")
-	ESlashWeaponType GetEquippedWeaponType();
+	EBC_WeaponType GetEquippedWeaponType();
 	
 	UFUNCTION(BlueprintPure, Category = "Slash|Weapon")
 	ESlashCombatState GetCombatState() const { return CombatState; }

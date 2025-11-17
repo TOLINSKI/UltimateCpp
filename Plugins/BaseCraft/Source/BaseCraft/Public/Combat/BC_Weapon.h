@@ -5,13 +5,15 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Interfaces/BC_WeaponInterface.h"
+#include "Utility/BC_Types.h"
 #include "BC_Weapon.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBC_OnWeaponHit, const FHitResult&, HitResult);
 
 class UCapsuleComponent;
+class UBC_WeaponMontageComponent;
 
-UCLASS(ClassGroup=(BaseCraft))
+UCLASS(ClassGroup=(BaseCraft), Abstract)
 class BASECRAFT_API ABC_Weapon : public AActor, public IBC_WeaponInterface
 {
 	GENERATED_BODY()
@@ -29,9 +31,13 @@ protected:
 // Base Craft Interface
 // ====================
 public:
+	
+	//~ Begin Weapon Interface
 	virtual void Attach_Implementation(USceneComponent* Parent, FName SocketName) override;
 	virtual void BeginAttackTracing_Implementation() override final;
 	virtual void EndAttackTracing_Implementation() override final;
+	virtual uint8 GetWeaponType_Implementation() const override { return static_cast<uint8>(WeaponType);}
+	//~ End Weapon Interface
 	
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Components")
@@ -40,6 +46,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Components")
 	TObjectPtr<UStaticMeshComponent> Mesh;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Components")
+	TObjectPtr<UBC_WeaponMontageComponent> MontageManager; 
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Weapon")
+	EBC_WeaponType WeaponType;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Weapon")
 	TEnumAsByte<ECollisionChannel> AttackTraceChannel;
 

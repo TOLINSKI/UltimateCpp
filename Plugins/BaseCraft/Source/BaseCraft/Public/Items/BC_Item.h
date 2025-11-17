@@ -36,6 +36,8 @@ public:
 	virtual bool CanInteract_Implementation() override;
 	//~ End Case Craft Interactable Interface
 	
+	virtual void SetPickupEnabled(bool bPickupEnabled);
+	
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BaseCraft|Components")
 	TObjectPtr<USceneComponent> Root;
